@@ -1,0 +1,2496 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio-Odyssey: ผจญภัยโลกภายในร่างกาย | ชีววิทยา ม.5 เล่ม 4 (สสวท.)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Prompt & Sarabun for Thai readability -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Prompt', 'sans-serif'],
+                        body: ['Sarabun', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --theme-bg-from: #FFFBEB;
+            --theme-bg-via: #FFF7ED;
+            --theme-bg-to: #ECFDF5;
+            --theme-accent: #EA580C;
+            --theme-accent-soft: #FFEDD5;
+            --theme-border: #FDBA74;
+        }
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: linear-gradient(135deg, var(--theme-bg-from) 0%, var(--theme-bg-via) 50%, var(--theme-bg-to) 100%);
+            color: #1E293B;
+            overflow-x: hidden;
+            transition: background 0.5s ease;
+        }
+        .font-reading {
+            font-family: 'Sarabun', sans-serif;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F8FAFC;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+        .animate-float {
+            animation: floatSlow 4s ease-in-out infinite;
+        }
+        .storybook-card {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.07);
+        }
+        .story-choice {
+            transition: all 0.2s ease;
+        }
+        .story-choice:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.08);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-slate-800 selection:bg-amber-500 selection:text-white">
+
+    <!-- Toast Notification Container (For Real XP & Unlock Alerts) -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Top Navigation & Real-Time Explorer Dashboard (Starts at 0% / 0 XP) -->
+    <header id="mainHeader" class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 px-4 py-3 shadow-sm transition-colors duration-300">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            <!-- Brand & Captain Status -->
+            <div class="flex items-center gap-3 cursor-pointer" onclick="switchMainTab('story')">
+                <div id="headerAvatar" class="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-500 to-lime-500 text-white flex items-center justify-center text-xl shadow-md transition-all duration-300">
+                    <i class="fa-solid fa-shuttle-space"></i>
+                </div>
+                <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span id="headerChapterTag" class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">สสวท. ชีววิทยา ม.5 เล่ม 4</span>
+                        <span id="captainDisplayBadge" class="text-xs text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200"><i class="fa-solid fa-user-astronaut mr-1"></i>กัปตัน: นักสำรวจฝึกหัด</span>
+                        <span id="shipNameBadge" class="text-xs text-slate-600 font-medium hidden md:inline">• ยาน: Nano-Enzyme V1</span>
+                    </div>
+                    <h1 class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <span>BIO-ODYSSEY : มิติมหัศจรรย์ภายในร่างกาย</span>
+                        <span id="activeSystemPill" class="hidden sm:inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700 border border-orange-200">
+                            <i class="fa-solid fa-utensils"></i> ธีมระบบย่อยอาหาร
+                        </span>
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Mode Switcher Tabs -->
+            <nav class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+                <button onclick="switchMainTab('story')" id="tabBtn-story" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 bg-amber-500 text-white shadow-sm">
+                    <i class="fa-solid fa-book-open-reader"></i>
+                    <span>โหมดเนื้อเรื่อง (<span id="navStoryCount">0/14</span>)</span>
+                </button>
+                <button onclick="switchMainTab('lab')" id="tabBtn-lab" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 text-slate-600 hover:text-slate-900">
+                    <i class="fa-solid fa-flask-vial"></i>
+                    <span>ห้องแล็บ (<span id="navLabCount">0/2</span>)</span>
+                </button>
+                <button onclick="switchMainTab('quiz')" id="tabBtn-quiz" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 text-slate-600 hover:text-slate-900">
+                    <i class="fa-solid fa-trophy"></i>
+                    <span>ข้อสอบบอส (<span id="navQuizCount">0/10</span>)</span>
+                </button>
+            </nav>
+
+            <!-- Real-time XP, Rank, Badges & Reset -->
+            <div class="flex items-center gap-2.5">
+                <div class="flex items-center gap-2 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200">
+                    <i class="fa-solid fa-bolt text-amber-500 text-base"></i>
+                    <div>
+                        <div id="rankDisplay" class="text-[10px] text-amber-800/80 font-medium leading-none">ยศ: นักบินฝึกหัด</div>
+                        <div id="xpDisplay" class="text-sm font-bold text-amber-700">0 XP</div>
+                    </div>
+                </div>
+                <button onclick="openBadgeModal()" class="relative bg-white hover:bg-slate-50 px-3 py-2 rounded-xl border border-slate-200 shadow-sm transition flex items-center gap-2" title="เหรียญตราประจำบท (ปลดล็อกเมื่อเรียนจบจริง)">
+                    <i class="fa-solid fa-medal text-amber-500"></i>
+                    <span class="text-xs font-semibold text-slate-700 hidden xl:inline">เหรียญตรา</span>
+                    <span id="badgeCount" class="px-1.5 py-0.2 text-xs font-bold rounded-full bg-slate-200 text-slate-700">0/5</span>
+                </button>
+                <button onclick="openResetConfirmModal()" class="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition text-xs font-semibold" title="รีเซ็ตความคืบหน้าทั้งหมดกลับเป็น 0%">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Global Progress Bar (Strictly 0% until actions are completed) -->
+        <div class="max-w-7xl mx-auto mt-2.5 flex flex-wrap sm:flex-nowrap items-center gap-3">
+            <div class="flex items-center gap-2 text-[11px] text-slate-600 font-medium whitespace-nowrap">
+                <span><i class="fa-solid fa-chart-line text-emerald-600 mr-1"></i>ความคืบหน้าภารกิจรวม (ทำจริงค่อยขึ้น):</span>
+                <span id="progressBreakdownText" class="text-slate-500 hidden md:inline">(ฉากเนื้อเรื่อง 0/14 • แล็บ 0/2 • ข้อสอบ 0/10)</span>
+            </div>
+            <div class="w-full bg-slate-200/90 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-300/80">
+                <div id="globalProgressBar" class="bg-gradient-to-r from-amber-500 via-emerald-500 to-sky-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <span id="globalProgressText" class="text-xs font-bold text-emerald-700 min-w-[38px] text-right">0%</span>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6">
+
+        <!-- Dynamic Chapter Theme Switcher Ribbon (Quick Visual Theme Selector) -->
+        <section class="mb-5 storybook-card rounded-2xl p-3 sm:p-4 border border-slate-200">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-700">
+                    <i class="fa-solid fa-palette text-amber-500"></i>
+                    <span>เลือกบทเรียนเพื่อเปลี่ยนธีมสีและลวดลายตกแต่งตามระบบในร่างกายอัตโนมัติ:</span>
+                </div>
+                <button onclick="toggleIntroBanner()" class="text-xs font-semibold text-sky-600 hover:text-sky-800 flex items-center gap-1 self-start sm:self-auto">
+                    <i class="fa-solid fa-sliders"></i> ตั้งชื่อกัปตัน & เลือกยานสำรวจ
+                </button>
+            </div>
+            <div id="topThemeSelector" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+                <!-- Populated dynamically with the 5 themed chapter buttons -->
+            </div>
+        </section>
+
+        <!-- Hero / Captain & Ship Customization Banner (Light Storybook Style) -->
+        <section id="introBanner" class="mb-6 rounded-2xl bg-gradient-to-r from-white via-amber-50/70 to-emerald-50/70 border-2 border-amber-200 p-4 sm:p-5 relative overflow-hidden shadow-md">
+            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 relative z-10">
+                <div class="space-y-2 max-w-xl">
+                    <div class="inline-flex items-center gap-2 text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-3 py-1 rounded-full">
+                        <i class="fa-solid fa-seedling"></i> ระบบบันทึกความก้าวหน้าตามจริง (0% Starting Mode + LocalStorage)
+                    </div>
+                    <h2 class="text-lg sm:text-xl font-bold text-slate-800">
+                        ตั้งชื่อกัปตันและเลือกยานสำรวจนาโนของคุณ!
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-600 font-reading leading-relaxed">
+                        ความคืบหน้าและแต้ม XP เริ่มต้นที่ <b>0% (0 XP)</b> ทุกเปอร์เซ็นต์จะได้มาจากการอ่านเนื้อเรื่องแล้ว<b>กดยืนยันคำถาม Checkpoint ให้ถูกต้อง</b>, <b>ทำการทดลองในห้องแล็บครบ</b> และ<b>ทำข้อสอบจริง</b>เท่านั้น!
+                    </p>
+                    <div class="flex items-center gap-2 pt-1">
+                        <input id="captainNameInput" type="text" placeholder="ใส่ชื่อกัปตันของคุณ..." value="นักสำรวจฝึกหัด" class="bg-white border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-800 focus:border-amber-500 outline-none w-48 shadow-inner">
+                        <button onclick="saveCaptainName()" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition shadow-sm">
+                            บันทึกชื่อ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Ship Selector -->
+                <div class="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full lg:w-auto">
+                    <button onclick="selectShip('Nano-Enzyme V1', 'fa-shuttle-space', this)" class="ship-btn flex-1 sm:flex-initial p-3 rounded-xl bg-white hover:bg-amber-50/60 border-2 border-amber-500 shadow-sm transition flex items-center gap-2.5 text-left">
+                        <div class="w-9 h-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-base">
+                            <i class="fa-solid fa-shuttle-space"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-800">Nano-Enzyme V1</div>
+                            <div class="text-[10px] text-amber-700 font-medium">เชี่ยวชาญเอนไซม์ & การย่อย</div>
+                        </div>
+                    </button>
+                    <button onclick="selectShip('Aero-Oxy Jet', 'fa-jet-fighter-up', this)" class="ship-btn flex-1 sm:flex-initial p-3 rounded-xl bg-white hover:bg-sky-50/60 border border-slate-200 shadow-sm transition flex items-center gap-2.5 text-left">
+                        <div class="w-9 h-9 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-base">
+                            <i class="fa-solid fa-jet-fighter-up"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-800">Aero-Oxy Jet</div>
+                            <div class="text-[10px] text-sky-700 font-medium">ทนแรงดันก๊าซ & ถุงลมปอด</div>
+                        </div>
+                    </button>
+                    <button onclick="selectShip('Immuno-Shield', 'fa-shield-virus', this)" class="ship-btn flex-1 sm:flex-initial p-3 rounded-xl bg-white hover:bg-rose-50/60 border border-slate-200 shadow-sm transition flex items-center gap-2.5 text-left">
+                        <div class="w-9 h-9 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-base">
+                            <i class="fa-solid fa-shield-virus"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-800">Immuno-Shield</div>
+                            <div class="text-[10px] text-rose-700 font-medium">สแกนเลือด ภูมิคุ้มกัน & ไต</div>
+                        </div>
+                    </button>
+                    <button onclick="toggleIntroBanner()" class="p-2 text-slate-500 hover:text-slate-800 text-xs underline ml-auto" title="ซ่อนแถบตั้งค่า">
+                        ซ่อน
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 1: INTERACTIVE STORY MODE (5 CHAPTERS, 14 SCENES) ==================== -->
+        <div id="view-story" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left Sidebar: Chapter & Scene Navigator with Real Completion Status -->
+            <aside class="lg:col-span-4 xl:col-span-3 space-y-4">
+                <div class="storybook-card rounded-2xl p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 id="sidebarMapHeading" class="font-bold text-xs sm:text-sm uppercase tracking-wider text-amber-700 flex items-center gap-2">
+                            <i class="fa-solid fa-map-location-dot"></i> แผนที่ภารกิจ 5 บทเรียน
+                        </h3>
+                        <span class="text-[11px] text-slate-400">คลิกเพื่อสลับบท</span>
+                    </div>
+                    <div id="chapterListContainer" class="space-y-2.5">
+                        <!-- Dynamically populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Quick Glossary / Reference Card -->
+                <div id="sidebarKeyTipCard" class="storybook-card rounded-2xl p-4 border-2 border-amber-200 bg-gradient-to-b from-white to-amber-50/60">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-amber-700 flex items-center gap-2 mb-2">
+                        <i class="fa-solid fa-lightbulb text-amber-500"></i> สรุปจุดเน้น สสวท. ประจำฉาก
+                    </h4>
+                    <div id="sidebarKeyTip" class="text-xs text-slate-700 font-reading leading-relaxed space-y-2"></div>
+                </div>
+            </aside>
+
+            <!-- Right Content: Active Story Scene + Theme Banner + Visual SVG + Mandatory Checkpoint Quiz -->
+            <section class="lg:col-span-8 xl:col-span-9 space-y-6">
+                
+                <div id="mainStoryCard" class="storybook-card rounded-3xl border-2 border-amber-200 overflow-hidden shadow-lg transition-all duration-300">
+                    <!-- Dynamic Chapter Theme Decorative Banner -->
+                    <div id="chapterThemeBanner" class="px-6 py-4 bg-gradient-to-r from-amber-500 via-orange-500 to-lime-500 text-white relative overflow-hidden">
+                        <!-- Populated dynamically per chapter theme -->
+                    </div>
+
+                    <!-- Scene Title Bar -->
+                    <div class="bg-white px-6 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span id="sceneChapterBadge" class="text-xs font-bold text-amber-700 uppercase tracking-wider"></span>
+                                <span id="sceneCompletionStatusBadge" class="text-[11px] px-2.5 py-0.5 rounded-full font-semibold"></span>
+                            </div>
+                            <h2 id="sceneTitle" class="text-xl sm:text-2xl font-bold text-slate-800 mt-1"></h2>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="sceneStepIndicator" class="text-xs bg-slate-100 text-slate-700 px-3 py-1.5 rounded-xl border border-slate-200 font-bold"></span>
+                        </div>
+                    </div>
+
+                    <!-- Scene Visual Stage (Light-Themed Animated SVG Illustration) -->
+                    <div id="sceneVisualContainer" class="w-full bg-gradient-to-b from-amber-50/70 via-white to-orange-50/40 p-5 border-b border-slate-200 flex flex-col items-center justify-center min-h-[210px] relative overflow-hidden transition-colors duration-300">
+                        <!-- Populated dynamically with SVG diagrams -->
+                    </div>
+
+                    <!-- Story Narrative & Dialog -->
+                    <div class="p-6 space-y-6 bg-white">
+                        <!-- AI Navigator Transmission Box -->
+                        <div id="aiDialogBox" class="flex items-start gap-4 bg-amber-50/80 border border-amber-200 rounded-2xl p-4">
+                            <div id="aiDialogIcon" class="w-11 h-11 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-xl shrink-0 mt-0.5 shadow-sm">
+                                <i class="fa-solid fa-robot"></i>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span id="aiDialogTitle" class="text-xs font-bold text-amber-900 uppercase tracking-wide">AI ปัญญาประดิษฐ์ประจำยาน (BIO-NAV)</span>
+                                    <span id="aiDialogPill" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900">บรรยายภารกิจ</span>
+                                </div>
+                                <p id="sceneNarrativeLead" class="text-sm sm:text-base text-slate-700 font-reading leading-relaxed font-medium"></p>
+                            </div>
+                        </div>
+
+                        <!-- Deep-Dive Content Blocks (Light & High-Contrast Cards) -->
+                        <div id="sceneContentBody" class="space-y-4 font-reading text-slate-700 leading-relaxed">
+                            <!-- Populated by JS -->
+                        </div>
+
+                        <!-- Mandatory Checkpoint Question Inside Scene (Must confirm to earn progress) -->
+                        <div id="sceneCheckpointBox" class="mt-6 rounded-2xl bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/70 border-2 border-emerald-300 p-5 space-y-4 shadow-sm">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span class="text-xs font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-2">
+                                    <i class="fa-solid fa-clipboard-check text-emerald-600 text-base"></i> ด่านตรวจความเข้าใจประจำฉาก (ต้องตอบให้ถูกเพื่อบันทึกความคืบหน้า)
+                                </span>
+                                <span id="checkpointRewardLabel" class="text-xs px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 font-bold">รางวัลผ่านด่าน: +50 XP</span>
+                            </div>
+                            <p id="checkpointQuestion" class="text-base font-bold text-slate-800 font-reading"></p>
+                            <div id="checkpointOptions" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+                            
+                            <!-- Confirm Answer Button -->
+                            <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+                                <button id="confirmCheckpointBtn" onclick="submitSceneCheckpoint()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition flex items-center gap-2 shadow-md shadow-emerald-600/20 disabled:opacity-40 disabled:pointer-events-none">
+                                    <i class="fa-solid fa-check-double"></i> ยืนยันคำตอบเพื่อปลดล็อกความคืบหน้า
+                                </button>
+                                <span id="checkpointRequirementHint" class="text-xs text-amber-800 font-medium font-reading">
+                                    * เลือกคำตอบแล้วกดยืนยันเพื่อผ่านฉากนี้
+                                </span>
+                            </div>
+
+                            <div id="checkpointFeedback" class="hidden p-4 rounded-xl text-sm font-reading leading-relaxed"></div>
+                        </div>
+
+                        <!-- Scene Footer Navigation Buttons -->
+                        <div class="pt-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-4">
+                            <button id="prevSceneBtn" onclick="navigateScene(-1)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold transition flex items-center gap-2 disabled:opacity-40 disabled:pointer-events-none">
+                                <i class="fa-solid fa-arrow-left"></i> ฉากก่อนหน้า
+                            </button>
+
+                            <div class="flex flex-wrap items-center gap-3">
+                                <button onclick="switchMainTab('lab')" class="px-4 py-2.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 text-sm font-semibold transition flex items-center gap-2">
+                                    <i class="fa-solid fa-flask"></i> ไปห้องแล็บจำลอง
+                                </button>
+                                <button id="nextSceneBtn" onclick="navigateScene(1)" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-amber-600 hover:to-emerald-700 text-white font-bold text-sm transition flex items-center gap-2 shadow-md disabled:opacity-40 disabled:pointer-events-none">
+                                    <span>เดินทางสู่ฉากต่อไป</span> <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ==================== TAB 2: INTERACTIVE LAB SIMULATIONS (THEMED BY CHAPTER) ==================== -->
+        <div id="view-lab" class="hidden space-y-8">
+            <div class="text-center max-w-3xl mx-auto space-y-2 storybook-card p-6 rounded-3xl border-2 border-slate-200">
+                <span class="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    Interactive Biology Laboratory (สสวท.)
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-slate-800">ห้องปฏิบัติการจำลองชีววิทยาเสมือนจริง</h2>
+                <p class="text-sm text-slate-600 font-reading">
+                    แต่ละห้องแล็บตกแต่งตามธีมระบบร่างกาย ลงมือทำการทดลองให้ครบตามภารกิจเช็กลิสต์เพื่อปลดล็อกความคืบหน้าห้องแล็บ (รับแล็บละ <b>+100 XP</b>)
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- LAB 1: Chapter 13 Warm Amber/Lime Digestive Theme -->
+                <div class="storybook-card rounded-3xl border-2 border-amber-300 overflow-hidden flex flex-col justify-between shadow-md">
+                    <div>
+                        <!-- Lab 1 Themed Header Banner -->
+                        <div class="bg-gradient-to-r from-amber-500 via-orange-500 to-lime-500 px-6 py-4 text-white flex items-center justify-between">
+                            <div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="text-xs font-bold uppercase bg-white/20 px-2.5 py-0.5 rounded-full">ปฏิบัติการบทที่ 13 • ระบบย่อยอาหาร</span>
+                                    <span id="lab1StatusBadge" class="text-[11px] px-2.5 py-0.5 rounded-full bg-white text-amber-900 font-bold">ยังไม่สำเร็จ (0/2 งานย่อย)</span>
+                                </div>
+                                <h3 class="text-xl font-bold mt-1">การย่อยทางเคมี & ทดสอบสมบัติของน้ำดี</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl shrink-0">
+                                <i class="fa-solid fa-vials"></i>
+                            </div>
+                        </div>
+
+                        <div class="p-6 space-y-4">
+                            <!-- Lab 1 Checklist -->
+                            <div class="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200 text-xs space-y-1.5">
+                                <div class="font-bold text-amber-900"><i class="fa-solid fa-list-check mr-1"></i> ภารกิจเพื่อปลดล็อก Lab 1 (+100 XP):</div>
+                                <div id="lab1Task1Text" class="text-slate-700"><i class="fa-regular fa-circle mr-1.5 text-amber-600"></i> 1. ทดลองเปลี่ยนสารอาหารและอวัยวะแล้วกดปุ่ม "เดินเครื่องวิเคราะห์เอนไซม์" อย่างน้อย 1 ครั้ง</div>
+                                <div id="lab1Task2Text" class="text-slate-700"><i class="fa-regular fa-circle mr-1.5 text-amber-600"></i> 2. กดปุ่ม "หยดน้ำดีลงในหลอดน้ำมันพืช+สีซูดาน" (กิจกรรม 13.3) เพื่อสังเกตอิมัลชัน</div>
+                            </div>
+
+                            <!-- Controls -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">1. เลือกสารอาหารตั้งต้น (Substrate):</label>
+                                    <select id="lab1Substrate" class="w-full bg-white border border-amber-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:border-amber-500 outline-none shadow-sm">
+                                        <option value="starch">แป้ง / ไกลโคเจน (คาร์โบไฮเดรต)</option>
+                                        <option value="protein">โปรตีนสายยาว (พอลิเพปไทด์)</option>
+                                        <option value="lipid">ไขมัน / ไตรกลีเซอไรด์ (ลิพิด)</option>
+                                        <option value="nucleic">กรดนิวคลิอิก (DNA / RNA)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">2. เลือกอวัยวะในทางเดินอาหาร:</label>
+                                    <select id="lab1Organ" class="w-full bg-white border border-amber-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:border-amber-500 outline-none shadow-sm">
+                                        <option value="mouth">ช่องปาก (pH 6.2 - 7.4)</option>
+                                        <option value="stomach">กระเพาะอาหาร (pH ~2 กรดจัด)</option>
+                                        <option value="duodenum">ลำไส้เล็กส่วนดูโอดินัม (pH ~8 เบสอ่อน)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button onclick="runEnzymeSimulation(true)" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs sm:text-sm transition shadow-md">
+                                <i class="fa-solid fa-play mr-1"></i> เดินเครื่องวิเคราะห์ปฏิกิริยาเอนไซม์
+                            </button>
+
+                            <!-- Reaction Display Box -->
+                            <div id="lab1ResultBox" class="rounded-2xl bg-orange-50/60 border border-amber-200 p-4 space-y-2.5">
+                                <!-- Filled dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mini Bile Experiment (Activity 13.3) -->
+                    <div class="px-6 pb-6 pt-3 border-t border-amber-200/80 bg-lime-50/50 space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span class="text-xs font-bold text-lime-900"><i class="fa-solid fa-droplet text-lime-600 mr-1"></i> กิจกรรม 13.3: ทดสอบสมบัติของน้ำดี (น้ำมันพืช + สีซูดาน)</span>
+                            <button onclick="toggleBileEmulsion()" id="bileBtn" class="px-3.5 py-1.5 rounded-xl bg-lime-600 hover:bg-lime-500 text-white text-xs font-bold transition shadow-sm">
+                                หยดน้ำดีลงในหลอดทดลองที่ 1
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-4 bg-white p-3 rounded-xl border border-lime-300 shadow-sm">
+                            <div id="bileCircles" class="w-20 h-14 rounded-lg bg-amber-50 flex items-center justify-center p-2 shrink-0 border border-amber-200">
+                                <div class="w-8 h-8 rounded-full bg-rose-500 shadow-md" title="น้ำมันพืชย้อมสีซูดาน"></div>
+                            </div>
+                            <p id="bileText" class="text-xs text-slate-700 font-reading">
+                                <b>หลอดควบคุม (ยังไม่หยดน้ำดี):</b> น้ำมันพืชที่ย้อมด้วยสีซูดานลอยแยกชั้นอยู่ด้านบนของน้ำเป็นหยดขนาดใหญ่ เอนไซม์ลิเพสเข้าย่อยได้ยาก
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LAB 2: Chapter 14 Sky Blue / Airy Mint Respiratory Theme -->
+                <div class="storybook-card rounded-3xl border-2 border-sky-300 overflow-hidden flex flex-col justify-between shadow-md">
+                    <div>
+                        <!-- Lab 2 Themed Header Banner -->
+                        <div class="bg-gradient-to-r from-sky-500 via-cyan-500 to-teal-400 px-6 py-4 text-white flex items-center justify-between">
+                            <div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="text-xs font-bold uppercase bg-white/20 px-2.5 py-0.5 rounded-full">ปฏิบัติการบทที่ 14 • ระบบหายใจ (กิจกรรม 14.2)</span>
+                                    <span id="lab2StatusBadge" class="text-[11px] px-2.5 py-0.5 rounded-full bg-white text-sky-900 font-bold">ยังไม่สำเร็จ (0/2 งานย่อย)</span>
+                                </div>
+                                <h3 class="text-xl font-bold mt-1">จำลองการทำงานของกะบังลม & ความดันย่อย</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl shrink-0">
+                                <i class="fa-solid fa-lungs"></i>
+                            </div>
+                        </div>
+
+                        <div class="p-6 space-y-4">
+                            <!-- Lab 2 Checklist -->
+                            <div class="p-3.5 rounded-2xl bg-sky-50/90 border border-sky-200 text-xs space-y-1.5">
+                                <div class="font-bold text-sky-900"><i class="fa-solid fa-list-check mr-1"></i> ภารกิจเพื่อปลดล็อก Lab 2 (+100 XP):</div>
+                                <div id="lab2Task1Text" class="text-slate-700"><i class="fa-regular fa-circle mr-1.5 text-sky-600"></i> 1. เลื่อนสไลเดอร์ดึงลูกสูบลงเพื่อจำลองการหายใจเข้า (ดึงลูกสูบเกิน 60%)</div>
+                                <div id="lab2Task2Text" class="text-slate-700"><i class="fa-regular fa-circle mr-1.5 text-sky-600"></i> 2. ทดลองเอาเครื่องหมายถูกออกเพื่อ "เปิดรูข้างหลอดฉีดยา" จำลองภาวะช่องอกทะลุ</div>
+                            </div>
+
+                            <!-- Interactive SVG Lung Bell Jar (Light Theme) -->
+                            <div class="bg-sky-50/50 rounded-2xl p-4 border border-sky-200 flex flex-col sm:flex-row items-center gap-6">
+                                <div class="w-40 h-44 flex items-center justify-center relative shrink-0 bg-white rounded-2xl border border-sky-200 shadow-inner">
+                                    <svg viewBox="0 0 200 220" class="w-full h-full">
+                                        <rect x="40" y="25" width="120" height="150" rx="10" fill="#F0F9FF" stroke="#0284C7" stroke-width="4"/>
+                                        <rect x="92" y="5" width="16" height="30" fill="#64748B"/>
+                                        <circle id="svgSideHole" cx="40" cy="85" r="6" fill="#10B981" stroke="#FFFFFF" stroke-width="2"/>
+                                        <ellipse id="svgLungLeft" cx="80" cy="85" rx="20" ry="28" fill="#FB7185" opacity="0.9" class="transition-all duration-300"/>
+                                        <ellipse id="svgLungRight" cx="120" cy="85" rx="20" ry="28" fill="#FB7185" opacity="0.9" class="transition-all duration-300"/>
+                                        <path id="svgDiaphragm" d="M 44 135 Q 100 120 156 135" fill="none" stroke="#0284C7" stroke-width="8" stroke-linecap="round" class="transition-all duration-300"/>
+                                        <rect id="svgPlungerRod" x="95" y="125" width="10" height="70" fill="#0284C7" class="transition-all duration-300"/>
+                                    </svg>
+                                </div>
+
+                                <div class="flex-1 space-y-3 w-full">
+                                    <div>
+                                        <div class="flex justify-between text-xs mb-1">
+                                            <span class="text-slate-600 font-medium">ดันลูกสูบขึ้น (หายใจออก)</span>
+                                            <span class="text-sky-700 font-bold">ดึงลูกสูบลง (หายใจเข้า)</span>
+                                        </div>
+                                        <input id="diaphragmSlider" type="range" min="0" max="100" value="15" oninput="updateBreathingSim(true)" class="w-full accent-sky-600 cursor-pointer">
+                                    </div>
+
+                                    <div class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-sky-200 shadow-sm">
+                                        <span class="text-xs font-semibold text-slate-700">ใช้นิ้วปิดรูเล็กข้างหลอดฉีดยา (ช่องอกปิดปกติ):</span>
+                                        <input id="holeSealedToggle" type="checkbox" checked onchange="updateBreathingSim(true)" class="w-4 h-4 accent-emerald-600 rounded cursor-pointer">
+                                    </div>
+
+                                    <div id="breathingSimStats" class="grid grid-cols-2 gap-2 text-xs"></div>
+                                </div>
+                            </div>
+
+                            <div id="breathingSimExplanation" class="p-3.5 rounded-xl bg-cyan-50 border border-cyan-200 text-xs font-reading text-slate-700 leading-relaxed"></div>
+                        </div>
+                    </div>
+
+                    <!-- Partial Pressure Calculator -->
+                    <div class="px-6 pb-6 pt-3 border-t border-sky-200/80 bg-sky-50/60 flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <span class="text-slate-700 font-semibold">คำนวณความดันย่อย $P_{O_2}$ (สัดส่วน $O_2$ = 21%):</span>
+                        <div class="flex items-center gap-2">
+                            <button onclick="calcPartialPressure(760, 'ระดับน้ำทะเล')" class="px-2.5 py-1 rounded-lg bg-white hover:bg-sky-100 text-sky-700 border border-sky-300 font-semibold shadow-sm">ระดับน้ำทะเล (760 mmHg)</button>
+                            <button onclick="calcPartialPressure(380, 'ยอดเขาสูง 5,800 ม.')" class="px-2.5 py-1 rounded-lg bg-white hover:bg-amber-100 text-amber-800 border border-amber-300 font-semibold shadow-sm">ยอดเขาสูง (380 mmHg)</button>
+                        </div>
+                        <div id="po2CalcResult" class="w-full text-emerald-800 font-semibold mt-1 bg-white px-3 py-1.5 rounded-lg border border-sky-200">
+                            ที่ระดับน้ำทะเล: $P_{O_2} = 760 \times (21/100) \approx 160\text{ mmHg}$ (เพียงพอต่อการแพร่เข้าถุงลม)
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ==================== TAB 3: QUIZ ARENA & BOSS BATTLES (10 QUESTIONS WITH CHAPTER THEMES) ==================== -->
+        <div id="view-quiz" class="hidden space-y-6">
+            <div class="storybook-card rounded-3xl p-6 border-2 border-slate-200">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">IPST Biology Assessment Arena</span>
+                        <h2 class="text-2xl font-bold text-slate-800 mt-1.5">สนามประลองข้อสอบบอสประจำเล่ม 4 (10 ข้อมาตรฐาน สสวท.)</h2>
+                        <p class="text-sm text-slate-600 font-reading">
+                            ข้อสอบแต่ละข้อตกแต่งตามธีมบทเรียน (บทที่ 13-17) เลือกคำตอบแล้วกดปุ่ม <b>"ส่งตรวจคำตอบข้อนี้"</b> เพื่อบันทึกความคืบหน้าตามจริง (ตอบถูกรับข้อละ <b>+40 XP</b>)
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="resetQuizArenaOnly()" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition">
+                            <i class="fa-solid fa-rotate-right mr-1"></i> ล้างคำตอบเฉพาะชุดข้อสอบ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quiz Active Stage -->
+                <div id="quizArenaContainer" class="mt-6 space-y-6">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Badge Achievement Modal (Light Theme) -->
+    <div id="badgeModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white max-w-lg w-full rounded-3xl border-2 border-slate-200 p-6 space-y-5 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-medal text-amber-500"></i> เหรียญตราเกียรติยศ 5 ระบบ (ปลดล็อกเมื่อผ่านครบทุกฉากในบท)
+                </h3>
+                <button onclick="closeBadgeModal()" class="text-slate-400 hover:text-slate-700 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="badgeModalList" class="space-y-3"></div>
+            <div class="text-right pt-2">
+                <button onclick="closeBadgeModal()" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold">
+                    ปิดหน้าต่าง
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Reset Confirmation Modal (Light Theme) -->
+    <div id="resetConfirmModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white max-w-md w-full rounded-3xl border-2 border-rose-300 p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center gap-3 text-rose-600">
+                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                <h3 class="text-lg font-bold text-slate-800">ยืนยันการรีเซ็ตความคืบหน้าทั้งหมด?</h3>
+            </div>
+            <p class="text-sm text-slate-600 font-reading leading-relaxed">
+                คะแนน XP, เปอร์เซ็นต์ความคืบหน้า, เหรียญตราประจำบท, สถานะห้องแล็บ และผลคะแนนข้อสอบทั้งหมดจะถูกรีเซ็ตกลับเป็น <b>0% (0 XP)</b> เพื่อเริ่มต้นใหม่ทั้งหมด
+            </p>
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button onclick="closeResetConfirmModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold">
+                    ยกเลิก
+                </button>
+                <button onclick="executeFullReset()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md">
+                    ยืนยัน รีเซ็ตเป็น 0%
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-200/90 bg-white/70 py-5 px-4 text-center text-xs text-slate-500 mt-12">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div class="font-medium text-slate-600">สื่อการเรียนรู้เชิงโต้ตอบ อ้างอิงหนังสือเรียนรายวิชาเพิ่มเติมวิทยาศาสตร์และเทคโนโลยี ชีววิทยา ชั้น ม.5 เล่ม 4 (สสวท.)</div>
+            <div class="text-slate-500">Dynamic Chapter Light Theme • Real-Action Progress (0% Initial State)</div>
+        </div>
+    </footer>
+
+    <!-- ==================== APPLICATION LOGIC & CURRICULUM DATA ==================== -->
+    <script>
+        const STORAGE_KEY = 'bio_odyssey_m5_v4_light_state';
+
+        // --- CHAPTER THEME PALETTES & DECORATIONS ---
+        const chapterThemes = {
+            ch13: {
+                name: 'ธีมระบบย่อยอาหาร',
+                subtitle: 'Warm Amber & Fresh Lime • โลกแห่งสารอาหาร เอนไซม์ หยดน้ำดี และวิลลัส',
+                bgFrom: '#FFFBEB',
+                bgVia: '#FFF7ED',
+                bgTo: '#ECFDF5',
+                bannerGradient: 'from-amber-500 via-orange-500 to-lime-500',
+                cardBorder: 'border-amber-300',
+                badgeBg: 'bg-amber-100 text-amber-900 border-amber-300',
+                accentBtn: 'bg-amber-500 hover:bg-amber-600 text-white',
+                visualStageBg: 'from-amber-50/80 via-white to-lime-50/50',
+                aiBoxBg: 'bg-amber-50/90 border-amber-200',
+                aiIconBg: 'bg-amber-500 text-white',
+                aiTitleText: 'text-amber-900',
+                decorIcons: ['fa-utensils', 'fa-apple-whole', 'fa-flask', 'fa-wheat-awn'],
+                bannerSvg: `
+                    <svg viewBox="0 0 220 70" class="w-44 h-14 opacity-90">
+                        <circle cx="30" cy="35" r="18" fill="rgba(255,255,255,0.25)"/>
+                        <circle cx="65" cy="25" r="10" fill="#BEF264"/>
+                        <circle cx="85" cy="45" r="12" fill="#FDE047"/>
+                        <path d="M120,60 L120,25 C120,10 145,10 145,25 L145,60" fill="rgba(255,255,255,0.3)" stroke="#FFFFFF" stroke-width="3"/>
+                        <path d="M155,60 L155,25 C155,10 180,10 180,25 L180,60" fill="rgba(255,255,255,0.3)" stroke="#FFFFFF" stroke-width="3"/>
+                        <text x="15" y="64" fill="#FFFFFF" font-size="9" font-weight="bold">ENZYME & VILLUS</text>
+                    </svg>
+                `
+            },
+            ch14: {
+                name: 'ธีมระบบหายใจ',
+                subtitle: 'Sky Blue & Airy Mint • สายลมออกซิเจน ถุงลมปอด 300 ล้านถุง และกะบังลม',
+                bgFrom: '#F0F9FF',
+                bgVia: '#ECFEFF',
+                bgTo: '#F0FDF4',
+                bannerGradient: 'from-sky-500 via-cyan-500 to-teal-400',
+                cardBorder: 'border-sky-300',
+                badgeBg: 'bg-sky-100 text-sky-900 border-sky-300',
+                accentBtn: 'bg-sky-500 hover:bg-sky-600 text-white',
+                visualStageBg: 'from-sky-50/80 via-white to-cyan-50/50',
+                aiBoxBg: 'bg-sky-50/90 border-sky-200',
+                aiIconBg: 'bg-sky-500 text-white',
+                aiTitleText: 'text-sky-900',
+                decorIcons: ['fa-lungs', 'fa-wind', 'fa-cloud-sun', 'fa-mountain-sun'],
+                bannerSvg: `
+                    <svg viewBox="0 0 220 70" class="w-44 h-14 opacity-90">
+                        <circle cx="35" cy="35" r="14" fill="rgba(255,255,255,0.3)" stroke="#FFF" stroke-width="2"/>
+                        <circle cx="58" cy="24" r="10" fill="rgba(255,255,255,0.25)" stroke="#FFF" stroke-width="2"/>
+                        <circle cx="62" cy="46" r="11" fill="rgba(255,255,255,0.25)" stroke="#FFF" stroke-width="2"/>
+                        <path d="M95,30 Q135,10 175,30 M105,45 Q145,25 185,45" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/>
+                        <text x="28" y="39" fill="#FFFFFF" font-size="10" font-weight="bold">O₂</text>
+                        <text x="115" y="64" fill="#FFFFFF" font-size="9" font-weight="bold">ALVEOLI & AIRFLOW</text>
+                    </svg>
+                `
+            },
+            ch15: {
+                name: 'ธีมระบบหมุนเวียนเลือดและน้ำเหลือง',
+                subtitle: 'Soft Rose & Coral Crimson • จังหวะหัวใจ 4 ห้อง สายธารเม็ดเลือดแดง และท่อน้ำเหลือง',
+                bgFrom: '#FFF1F2',
+                bgVia: '#FFE4E6',
+                bgTo: '#FFF7ED',
+                bannerGradient: 'from-rose-500 via-pink-500 to-red-500',
+                cardBorder: 'border-rose-300',
+                badgeBg: 'bg-rose-100 text-rose-900 border-rose-300',
+                accentBtn: 'bg-rose-500 hover:bg-rose-600 text-white',
+                visualStageBg: 'from-rose-50/80 via-white to-pink-50/50',
+                aiBoxBg: 'bg-rose-50/90 border-rose-200',
+                aiIconBg: 'bg-rose-500 text-white',
+                aiTitleText: 'text-rose-900',
+                decorIcons: ['fa-heart-pulse', 'fa-droplet', 'fa-wave-square', 'fa-stethoscope'],
+                bannerSvg: `
+                    <svg viewBox="0 0 220 70" class="w-44 h-14 opacity-95">
+                        <polyline points="10,35 45,35 58,12 72,58 86,22 98,42 110,35 195,35" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="155" cy="24" r="9" fill="#FECDD3"/>
+                        <circle cx="180" cy="42" r="8" fill="#FECDD3"/>
+                        <text x="115" y="64" fill="#FFFFFF" font-size="9" font-weight="bold">HEARTBEAT & RBC</text>
+                    </svg>
+                `
+            },
+            ch16: {
+                name: 'ธีมระบบภูมิคุ้มกัน',
+                subtitle: 'Royal Lavender & Shield Gold • ป้อมปราการเม็ดเลือดขาว แอนติบอดีรูปตัว Y และวัคซีน',
+                bgFrom: '#F5F3FF',
+                bgVia: '#FAF5FF',
+                bgTo: '#FEFCE8',
+                bannerGradient: 'from-violet-600 via-purple-500 to-amber-500',
+                cardBorder: 'border-purple-300',
+                badgeBg: 'bg-purple-100 text-purple-900 border-purple-300',
+                accentBtn: 'bg-purple-600 hover:bg-purple-700 text-white',
+                visualStageBg: 'from-purple-50/80 via-white to-amber-50/40',
+                aiBoxBg: 'bg-purple-50/90 border-purple-200',
+                aiIconBg: 'bg-purple-600 text-white',
+                aiTitleText: 'text-purple-900',
+                decorIcons: ['fa-shield-halved', 'fa-shield-virus', 'fa-syringe', 'fa-dna'],
+                bannerSvg: `
+                    <svg viewBox="0 0 220 70" class="w-44 h-14 opacity-95">
+                        <path d="M35,12 L60,20 L60,38 C60,52 35,60 35,60 C35,60 10,52 10,38 L10,20 Z" fill="rgba(255,255,255,0.28)" stroke="#FEF08A" stroke-width="2.5"/>
+                        <path d="M115,48 L115,30 L102,16 M115,30 L128,16" fill="none" stroke="#FEF08A" stroke-width="4" stroke-linecap="round"/>
+                        <path d="M160,48 L160,30 L147,16 M160,30 L173,16" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+                        <text x="98" y="64" fill="#FFFFFF" font-size="9" font-weight="bold">ANTIBODY SHIELD</text>
+                    </svg>
+                `
+            },
+            ch17: {
+                name: 'ธีมระบบขับถ่าย',
+                subtitle: 'Emerald & Clean Water Teal • โรงงานกรองเลือด หน่วยไต 1 ล้านหน่วย และดุลยภาพน้ำ',
+                bgFrom: '#ECFDF5',
+                bgVia: '#F0FDFA',
+                bgTo: '#E0F2FE',
+                bannerGradient: 'from-emerald-600 via-teal-500 to-cyan-500',
+                cardBorder: 'border-emerald-300',
+                badgeBg: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+                accentBtn: 'bg-emerald-600 hover:bg-emerald-700 text-white',
+                visualStageBg: 'from-emerald-50/80 via-white to-teal-50/50',
+                aiBoxBg: 'bg-emerald-50/90 border-emerald-200',
+                aiIconBg: 'bg-emerald-600 text-white',
+                aiTitleText: 'text-emerald-900',
+                decorIcons: ['fa-filter', 'fa-glass-water-droplet', 'fa-scale-balanced', 'fa-droplet'],
+                bannerSvg: `
+                    <svg viewBox="0 0 220 70" class="w-44 h-14 opacity-95">
+                        <path d="M40,15 C22,15 18,52 40,55 C52,56 54,42 46,35 C54,28 52,15 40,15 Z" fill="rgba(255,255,255,0.3)" stroke="#FFFFFF" stroke-width="2.5"/>
+                        <path d="M85,15 C103,15 107,52 85,55 C73,56 71,42 79,35 C71,28 73,15 85,15 Z" fill="rgba(255,255,255,0.3)" stroke="#FFFFFF" stroke-width="2.5"/>
+                        <path d="M145,15 C145,15 162,36 162,46 C162,55 154,60 145,60 C136,60 128,55 128,46 C128,36 145,15 145,15 Z" fill="#A7F3D0" stroke="#FFFFFF" stroke-width="2"/>
+                        <text x="115" y="66" fill="#FFFFFF" font-size="8" font-weight="bold">NEPHRON FILTER</text>
+                    </svg>
+                `
+            }
+        };
+
+        // --- INITIAL STATE (STRICTLY 0% / 0 XP / NOTHING COMPLETED) ---
+        function createInitialState() {
+            return {
+                captainName: 'นักสำรวจฝึกหัด',
+                shipName: 'Nano-Enzyme V1',
+                shipIcon: 'fa-shuttle-space',
+                xp: 0,
+                currentChapterIndex: 0,
+                currentSceneIndex: 0,
+                selectedCheckpointOption: null,
+                completedScenes: {},            // key: 'cIdx-sIdx' -> true ONLY after answering checkpoint correctly
+                checkpointAttempts: {},         // key: 'cIdx-sIdx' -> { selected, isCorrect }
+                labProgress: {
+                    lab1EnzymeRun: false,
+                    lab1BileTested: false,
+                    lab1Completed: false,
+                    lab2InhaleTested: false,
+                    lab2HoleOpened: false,
+                    lab2Completed: false
+                },
+                quizSelectedOption: {},
+                quizSubmitted: {},
+                badges: {
+                    ch13: { unlocked: false, name: 'ปรมาจารย์เอนไซม์และทางเดินอาหาร', desc: 'ตอบคำถาม Checkpoint ผ่านครบทั้ง 4 ฉากของบทที่ 13 ระบบย่อยอาหาร', icon: 'fa-utensils', color: 'text-amber-600 bg-amber-100' },
+                    ch14: { unlocked: false, name: 'ผู้พิชิตยอดเขาและแรงดันออกซิเจน', desc: 'ตอบคำถาม Checkpoint ผ่านครบทั้ง 4 ฉากของบทที่ 14 ระบบหายใจ', icon: 'fa-lungs', color: 'text-sky-600 bg-sky-100' },
+                    ch15: { unlocked: false, name: 'กัปตันสายธารโลหิตและน้ำเหลือง', desc: 'ตอบคำถาม Checkpoint ผ่านครบทั้ง 2 ฉากของบทที่ 15 ระบบหมุนเวียนเลือด', icon: 'fa-heart-pulse', color: 'text-rose-600 bg-rose-100' },
+                    ch16: { unlocked: false, name: 'ผู้บัญชาการกองทัพภูมิคุ้มกัน', desc: 'ตอบคำถาม Checkpoint ผ่านครบทั้ง 2 ฉากของบทที่ 16 ระบบภูมิคุ้มกัน', icon: 'fa-shield-halved', color: 'text-purple-600 bg-purple-100' },
+                    ch17: { unlocked: false, name: 'วิศวกรสมดุลหน่วยไตอัจฉริยะ', desc: 'ตอบคำถาม Checkpoint ผ่านครบทั้ง 2 ฉากของบทที่ 17 ระบบขับถ่าย', icon: 'fa-filter', color: 'text-emerald-600 bg-emerald-100' }
+                }
+            };
+        }
+
+        let playerState = createInitialState();
+
+        function saveStateToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(playerState));
+            } catch (e) {}
+        }
+
+        function loadStateFromStorage() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    playerState = Object.assign(createInitialState(), parsed);
+                }
+            } catch (e) {
+                playerState = createInitialState();
+            }
+        }
+
+        // --- COMPLETE 5 CHAPTERS (14 SCENES TOTAL) ---
+        const chaptersData = [
+            {
+                id: 'ch13',
+                number: 'บทที่ 13',
+                title: 'ระบบย่อยอาหาร',
+                shortSub: 'อาหาร เอนไซม์ & วิลลัส',
+                color: 'amber',
+                icon: 'fa-utensils',
+                scenes: [
+                    {
+                        title: 'ฉากที่ 1: มิติสิ่งมีชีวิตเซลล์เดียวและสัตว์ต่างสายพันธุ์',
+                        keyTip: 'รา/เห็ดย่อยภายนอกเซลล์ • อะมีบา/พารามีเซียม/ฟองน้ำ (โคเอโนไซต์ & อะมีโบไซต์) ย่อยภายในเซลล์ • ไฮดรา/พลานาเรียมีทางเดินอาหารไม่สมบูรณ์ (ช่องเปิดเดียว) ย่อยทั้งภายนอกและภายในเซลล์',
+                        lead: 'กัปตัน! ภารกิจแรกของเราในธีมระบบย่อยอาหารคือการสแกนเปรียบเทียบโครงสร้างการย่อยอาหารของสิ่งมีชีวิต อ่านข้อมูลด้านล่างให้ครบ แล้วตอบคำถามด่านตรวจเพื่อรับ XP แรกของคุณ!',
+                        svgType: 'animal_digestion',
+                        contentHtml: `
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-2">
+                                    <h4 class="font-bold text-amber-900"><i class="fa-solid fa-bacteria text-amber-600 mr-1"></i> 1. การย่อยภายนอกเซลล์ vs ภายในเซลล์</h4>
+                                    <ul class="text-sm space-y-1.5 list-disc list-inside text-slate-700">
+                                        <li><b>เห็ดและรา:</b> ปล่อยเอนไซม์ออกมาย่อยอาหาร<b>ภายนอกเซลล์</b> แล้วดูดซึมสารอาหารโมเลกุลเล็กเข้าสู่เซลล์ (ราขนมปังย่อยแป้ง, เห็ดย่อยเซลลูโลส)</li>
+                                        <li><b>อะมีบา & พารามีเซียม:</b> ย่อย<b>ภายในเซลล์</b> อะมีบานำอาหารเข้าด้วยวิธี<i>ฟาโกไซโทซิส/พิโนไซโทซิส</i> ส่วนพารามีเซียมใช้<i>ซิเลีย</i>โบกพัดอาหารเข้าร่องปาก เกิดเป็น<b>ฟูดแวคิวโอล (food vacuole)</b> รวมกับ<b>ไลโซโซม</b> แล้วขับกากออกด้วยวิธีเอกโซไซโทซิส</li>
+                                    </ul>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-lime-50/70 border border-lime-200 space-y-2">
+                                    <h4 class="font-bold text-lime-900"><i class="fa-solid fa-water text-lime-600 mr-1"></i> 2. สัตว์ไม่มีทางเดินอาหาร & ทางเดินอาหารไม่สมบูรณ์</h4>
+                                    <ul class="text-sm space-y-1.5 list-disc list-inside text-slate-700">
+                                        <li><b>ฟองน้ำ (ไม่มีทางเดินอาหาร):</b> ใช้เซลล์ปลอกคอ <b>โคเอโนไซต์ (choanocyte)</b> โบกพัดอาหารเข้าเซลล์เกิดฟูดแวคิวโอล และมี<b>อะมีโบไซต์ (amoebocyte)</b> ช่วยย่อยภายในเซลล์และส่งต่อสารอาหาร</li>
+                                        <li><b>ไฮดรา & พลานาเรีย (ทางเดินอาหารไม่สมบูรณ์):</b> มีช่องเปิดเดียวคือปาก ไฮดราใช้เข็มพิษที่เทนทาเคิลจับเหยื่อ ส่วนพลานาเรียยื่น<b>คอหอย (pharynx)</b> ออกมาปล่อยเอนไซม์ย่อยนอกตัวแล้วดูดเข้าทางเดินอาหารที่แตกแขนง ทั้งคู่มี<b>ทั้งการย่อยภายนอกเซลล์และภายในเซลล์</b></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-orange-50/70 border border-orange-200 text-sm text-slate-700">
+                                <b class="text-orange-800"><i class="fa-solid fa-worm mr-1"></i> 3. สัตว์ที่มีทางเดินอาหารสมบูรณ์ (มีปากและทวารหนัก):</b> พบในไส้เดือนดิน แมลง และสัตว์มีกระดูกสันหลัง เช่น <b>ไส้เดือนดินและนก</b>มีกระเพาะพักอาหารและ<b>กึ๋น (gizzard)</b> ช่วยบดอาหาร, <b>ตั๊กแตน</b>ใช้<b>โพรเวนทริคิวลัส (proventriculus)</b> ช่วยบดอาหาร ส่วนสัตว์กินพืช (เช่น กระต่าย ปลากินพืช) จะมีลำไส้ยาวกว่าสัตว์กินเนื้อ
+                            </div>
+                        `,
+                        checkpoint: {
+                            q: 'สิ่งมีชีวิตในข้อใดที่มี "ทางเดินอาหารแบบไม่สมบูรณ์" และมีกระบวนการย่อยอาหารทั้งภายนอกเซลล์และภายในเซลล์?',
+                            options: [
+                                'ฟองน้ำ และ อะมีบา',
+                                'ไฮดรา และ พลานาเรีย',
+                                'ไส้เดือนดิน และ ตั๊กแตน',
+                                'พารามีเซียม และ ราขนมปัง'
+                            ],
+                            correct: 1,
+                            explanation: 'ถูกต้อง! ไฮดราและพลานาเรียมีทางเดินอาหารแบบไม่สมบูรณ์ (มีปากเป็นทางเข้าของอาหารและทางออกของกากอาหาร) โดยปล่อยเอนไซม์มาย่อยในช่องลำตัวก่อน (ย่อยภายนอกเซลล์) แล้วนำเข้าสู่เซลล์เพื่อย่อยต่อภายในเซลล์'
+                        }
+                    },
+                    {
+                        title: 'ฉากที่ 2: ด่านช่องปาก หลอดอาหาร และกระเพาะอาหาร',
+                        keyTip: 'ต่อมน้ำลาย 3 คู่หลั่งอะไมเลสย่อยแป้งเป็นเดกซ์ทรินและมอลโทส • ขณะกลืน เพดานอ่อนปิดโพรงจมูก ฝาปิดกล่องเสียงปิดท่อลม • กระเพาะอาหารมีเซลล์สร้างเมือก, เซลล์สร้างกรด HCl และเซลล์สร้างเพปซิโนเจน',
+                        lead: 'ยานสำรวจเคลื่อนเข้าสู่ช่องปาก ผ่านหลอดอาหารด้วยคลื่นเพอริสตัลซิส และลงสู่กระเพาะอาหารที่มีกรด HCl และเอนไซม์เพปซินแล้วกัปตัน!',
+                        svgType: 'stomach_acid',
+                        contentHtml: `
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-2 text-sm text-slate-700">
+                                    <h4 class="font-bold text-amber-900">1. ช่องปาก การกลืน และหลอดอาหาร</h4>
+                                    <p>ฟันบดเคี้ยวอาหาร (ย่อยเชิงกล) ลิ้นคลุกเคล้ากับน้ำลายจาก<b>ต่อมน้ำลาย 3 คู่</b> (ข้างกกหู, ใต้ขากรรไกร, ใต้ลิ้น) ซึ่งมีเอนไซม์<b>อะไมเลส</b>ย่อยแป้งและไกลโคเจนให้เป็น<b>เดกซ์ทรินและมอลโทส</b></p>
+                                    <p><b>ขณะกลืน:</b> เพดานอ่อนยกขึ้นปิดโพรงจมูก กล่องเสียงยกตัวขึ้นชน<b>ฝาปิดกล่องเสียง (epiglottis)</b> ให้ปิดท่อลม จากนั้นกล้ามเนื้อเรียบของหลอดอาหารจะหดและคลายตัวเป็นลูกคลื่นเรียกว่า <b>เพอริสตัลซิส (peristalsis)</b> ดันอาหารลงสู่กระเพาะอาหาร</p>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-orange-50/70 border border-orange-200 space-y-2 text-sm text-slate-700">
+                                    <h4 class="font-bold text-orange-900">2. กระเพาะอาหาร (Stomach)</h4>
+                                    <p>เมื่ออาหารเข้าสู่กระเพาะอาหาร เซลล์กระเพาะส่วนท้ายจะหลั่ง<b>ฮอร์โมนแกสตริน (gastrin)</b> กระตุ้นการหลั่งกรด โดยผนังด้านในมีเซลล์สำคัญ 3 ชนิด:</p>
+                                    <ul class="list-disc list-inside space-y-1 text-xs sm:text-sm">
+                                        <li><b>เซลล์สร้างเมือก:</b> เคลือบป้องกันผนังกระเพาะไม่ให้ถูกย่อย</li>
+                                        <li><b>เซลล์สร้างกรดไฮโดรคลอริก (HCl):</b> ทำให้ pH เป็นกรดจัด (~2) ทำลายแบคทีเรีย และเปลี่ยนเพปซิโนเจนให้พร้อมทำงาน</li>
+                                        <li><b>เซลล์สร้างเพปซิโนเจน:</b> เมื่อถูกกรด HCl เปลี่ยนเป็น<b>เพปซิน (pepsin)</b> จะย่อยโปรตีนให้เป็น<b>พอลิเพปไทด์สายสั้นลง</b></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        `,
+                        checkpoint: {
+                            q: 'ข้อใดอธิบายการทำงานของสารในกระเพาะอาหารของมนุษย์ได้ถูกต้อง?',
+                            options: [
+                                'กรดไฮโดรคลอริกทำหน้าที่ย่อยโปรตีนโดยตรงให้กลายเป็นกรดแอมิโนอิสระ',
+                                'กรดไฮโดรคลอริกเปลี่ยนเพปซิโนเจนให้เป็นเอนไซม์เพปซิน เพื่อย่อยโปรตีนให้เป็นพอลิเพปไทด์สายสั้นลง',
+                                'เอนไซม์อะไมเลสจากน้ำลายทำงานได้ดีที่สุดในสภาพกรดจัดของกระเพาะอาหาร',
+                                'ฮอร์โมนแกสตรินทำหน้าที่เปลี่ยนไขมันให้เป็นอิมัลชันในกระเพาะอาหาร'
+                            ],
+                            correct: 1,
+                            explanation: 'ถูกต้อง! เซลล์กระเพาะอาหารหลั่งเพปซิโนเจนซึ่งยังไม่พร้อมทำงาน เมื่อสัมผัสกับกรดไฮโดรคลอริก (HCl) จึงเปลี่ยนเป็นเอนไซม์เพปซิน แล้วไปย่อยโปรตีนให้เป็นพอลิเพปไทด์สายสั้นลง'
+                        }
+                    },
+                    {
+                        title: 'ฉากที่ 3: สมรภูมิลำไส้เล็กส่วนดูโอดินัม ตับ และตับอ่อน',
+                        keyTip: 'ตับสร้างน้ำดีเก็บที่ถุงน้ำดีทำให้ลิพิดเกิดอิมัลชัน • ตับอ่อนหลั่ง NaHCO3 ลดกรด และหลั่งเอนไซม์ • เอนเทอโรไคเนสจากลำไส้เล็กเปลี่ยนทริปซิโนเจนเป็นทริปซิน แล้วทริปซินจึงเปลี่ยนไคโมทริปซิโนเจนและโพรคาร์บอกซิเพปทิเดส',
+                        lead: 'เราเข้าสู่ "ดูโอดินัม (Duodenum)" ลำไส้เล็กส่วนต้นแล้วกัปตัน! ที่นี่คือจุดนัดพบของน้ำดีจากตับ เอนไซม์และเบสจากตับอ่อน และเอนไซม์จากเซลล์บุผิวลำไส้เล็ก!',
+                        svgType: 'duodenum_factory',
+                        contentHtml: `
+                            <div class="space-y-3 text-sm text-slate-700">
+                                <div class="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 space-y-2">
+                                    <h4 class="font-bold text-amber-900">การทำงานร่วมกันที่ลำไส้เล็กส่วนดูโอดินัม (pH ~ 8)</h4>
+                                    <ul class="list-disc list-inside space-y-1.5">
+                                        <li><b>ตับและถุงน้ำดี:</b> ตับสร้าง<b>น้ำดี (bile)</b> เก็บไว้ที่ถุงน้ำดี ในน้ำดีมี<b>เกลือน้ำดี</b>ช่วยให้ลิพิดแตกตัวเป็นหยดเล็กๆ เรียกว่า <b>อิมัลชัน (emulsion)</b></li>
+                                        <li><b>ตับอ่อน (Pancreas):</b> หลั่ง<b>โซเดียมไฮโดรเจนคาร์บอเนต ($NaHCO_3$)</b> ซึ่งเป็นเบสมาลดความเป็นกรดของอาหารจากกระเพาะ และส่งเอนไซม์มาย่อยสารอาหารทุกกลุ่ม</li>
+                                        <li><b>การปลุกเอนไซม์ย่อยโปรตีน:</b> เซลล์บุผิวลำไส้เล็กสร้าง <b>เอนเทอโรไคเนส (enterokinase)</b> เปลี่ยน <i>ทริปซิโนเจน → ทริปซิน (trypsin)</i> จากนั้น<b>ทริปซิน</b>จะเปลี่ยน <i>ไคโมทริปซิโนเจน → ไคโมทริปซิน</i> และเปลี่ยน <i>โพรคาร์บอกซิเพปทิเดส → คาร์บอกซิเพปทิเดส</i></li>
+                                        <li><b>เอนไซม์จากผนังลำไส้เล็ก:</b> สร้างไดแซ็กคาไรเดส (มอลเทส, ซูเครส, แล็กเทส), เพปทิเดส (แอมิโนเพปทิเดส, ไดเพปทิเดส, ไตรเพปทิเดส) และนิวคลีโอทิเดส/นิวคลีโอซิเดส ย่อยสารอาหารจนได้โมเลกุลเดี่ยวขนาดเล็กที่สุด</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        `,
+                        checkpoint: {
+                            q: 'เอนไซม์เอนเทอโรไคเนส (Enterokinase) ที่สร้างจากเซลล์บุผิวของลำไส้เล็กมีหน้าที่จำเพาะตามข้อใด?',
+                            options: [
+                                'เปลี่ยนเพปซิโนเจนให้เป็นเพปซิน',
+                                'เปลี่ยนทริปซิโนเจนจากตับอ่อนให้เป็นทริปซิน (จากนั้นทริปซินจึงไปกระตุ้นเอนไซม์ตัวอื่นต่อ)',
+                                'ย่อยน้ำตาลแล็กโทสให้เป็นกลูโคสและกาแล็กโทส',
+                                'ทำให้ไขมันแตกตัวเป็นอิมัลชันแทนเกลือน้ำดี'
+                            ],
+                            correct: 1,
+                            explanation: 'ถูกต้อง! เอนเทอโรไคเนสจากผนังลำไส้เล็กทำหน้าที่เปลี่ยนทริปซิโนเจนให้เป็นทริปซิน จากนั้นทริปซินจึงไปเปลี่ยนไคโมทริปซิโนเจนและโพรคาร์บอกซิเพปทิเดสให้พร้อมทำงาน'
+                        }
+                    },
+                    {
+                        title: 'ฉากที่ 4: ปฏิบัติการดูดซึมที่วิลลัส และการเดินทางสู่ลำไส้ใหญ่',
+                        keyTip: 'กลูโคส กรดแอมิโน วิตามิน B, C เข้าหลอดเลือดฝอย -> เฮพาทิกพอทัลเวน -> ตับ -> เฮพาทิกเวน -> หัวใจ • กรดไขมัน กลีเซอรอล วิตามิน A, D, E, K สังเคราะห์เป็นไคโลไมครอนเข้าหลอดน้ำเหลืองฝอย',
+                        lead: 'ฉากสุดท้ายของบทที่ 13! สารอาหารโมเลกุลเดี่ยวกำลังถูกดูดซึมผ่านไมโครวิลลัสเข้าสู่หลอดเลือดฝอยและหลอดน้ำเหลืองฝอย ตอบคำถามด่านนี้ให้ถูกเพื่อรับเหรียญตราประจำบทที่ 13 กันเลย!',
+                        svgType: 'villus_absorption',
+                        contentHtml: `
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
+                                <div class="p-4 rounded-2xl bg-rose-50/80 border border-rose-200 space-y-1.5">
+                                    <h4 class="font-bold text-rose-900">1. เส้นทางหลอดเลือดฝอยในวิลลัส (ผ่านตับ)</h4>
+                                    <p><b>มอโนแซ็กคาไรด์</b> (กลูโคสลำเลียงแบบแอกทีฟทรานสปอร์ต, ฟรักโทสแพร่แบบฟาซิลิเทต), <b>กรดแอมิโน, ธาตุอาหาร และวิตามินที่ละลายในน้ำ (B, C)</b> จะเข้าสู่หลอดเลือดฝอย → ลำเลียงผ่าน <b>เฮพาทิกพอทัลเวน (hepatic portal vein)</b> เข้าสู่<b>ตับ</b>เพื่อกำจัดสารพิษ → ออกจากตับทาง<b>เฮพาทิกเวน</b>เข้าสู่หัวใจ</p>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 space-y-1.5">
+                                    <h4 class="font-bold text-amber-900">2. เส้นทางหลอดน้ำเหลืองฝอย (ไม่ผ่านตับ)</h4>
+                                    <p><b>กรดไขมันและกลีเซอรอล</b> (รวมถึงวิตามิน A, D, E, K) เมื่อเข้าสู่เซลล์บุผิววิลลัสจะถูกสังเคราะห์กลับเป็นไตรกลีเซอไรด์ใน ER แล้วรวมกับโปรตีนที่กอลจิคอมเพล็กซ์เป็น <b>ไคโลไมครอน (chylomicron)</b> เข้าสู่<b>หลอดน้ำเหลืองฝอย</b> → หลอดเลือดเวนก่อนเข้าหัวใจโดยตรง</p>
+                                </div>
+                            </div>
+                            <div class="p-3.5 rounded-2xl bg-lime-50/80 border border-lime-200 text-xs sm:text-sm text-slate-700">
+                                <b class="text-lime-900">ลำไส้ใหญ่ (ซีกัม, โคลอน, ไส้ตรง):</b> ดูดกลับน้ำ ธาตุอาหาร ขับเมือกหล่อลื่น และมี<b>ไมโครไบโอม</b> (เช่น <i>E. coli</i>) ช่วยสังเคราะห์วิตามิน K, B7, B9 และ B12
+                            </div>
+                        `,
+                        checkpoint: {
+                            q: 'ข้อใดเปรียบเทียบเส้นทางการลำเลียง "กรดแอมิโน" และ "กรดไขมัน" หลังจากถูกดูดซึมเข้าสู่เซลล์บุผิววิลลัสได้ถูกต้อง?',
+                            options: [
+                                'กรดแอมิโนเข้าสู่หลอดเลือดฝอยไปตับผ่านเฮพาทิกพอทัลเวน ส่วนกรดไขมันถูกสร้างเป็นไคโลไมครอนเข้าสู่หลอดน้ำเหลืองฝอย',
+                                'ทั้งกรดแอมิโนและกรดไขมันเข้าสู่หลอดน้ำเหลืองฝอยทั้งหมด',
+                                'กรดไขมันเข้าสู่เฮพาทิกพอทัลเวนไปที่ตับทันที ส่วนกรดแอมิโนเข้าสู่หลอดน้ำเหลืองฝอย',
+                                'สารอาหารทั้งสองชนิดถูกส่งตรงไปที่ลำไส้ใหญ่ส่วนโคลอนเพื่อดูดซึมเข้าหัวใจ'
+                            ],
+                            correct: 0,
+                            explanation: 'ถูกต้อง! กรดแอมิโนและน้ำตาลโมเลกุลเดี่ยวเข้าสู่หลอดเลือดฝอยแล้วผ่านเฮพาทิกพอทัลเวนเข้าสู่ตับ ส่วนกรดไขมันและกลีเซอรอลจะถูกสังเคราะห์เป็นไตรกลีเซอไรด์และรวมกับโปรตีนเป็นไคโลไมครอนเข้าสู่หลอดน้ำเหลืองฝอย'
+                        }
+                    }
+                ]
+            },
+            {
+                id: 'ch14',
+                number: 'บทที่ 14',
+                title: 'ระบบหายใจ',
+                shortSub: 'ออกซิเจน ถุงลม & กะบังลม',
+                color: 'sky',
+                icon: 'fa-lungs',
+                scenes: [
+                    {
+                        title: 'ฉากที่ 1: โครงสร้างแลกเปลี่ยนแก๊สของสัตว์ต่างสายพันธุ์',
+                        keyTip: 'ไส้เดือนดินใช้ผิวหนังชื้น • แมลงใช้ระบบท่อลม (spiracle -> tracheole) แพร่ถึงเซลล์โดยตรงไม่ผ่านเลือด • ปลาใช้เหงือกที่มีการแลกเปลี่ยนแบบสวนทางกัน (countercurrent exchange >80%) • นกใช้ปอดร่วมกับถุงลม หายใจ 2 รอบ',
+                        lead: 'กัปตัน! สังเกตไหมว่าหน้าเว็บเปลี่ยนเป็นธีมสีฟ้าสดใสของบทที่ 14 ระบบหายใจแล้ว! มาสำรวจกันว่าสัตว์แต่ละชนิดมีโครงสร้างแลกเปลี่ยนแก๊สอย่างไร!',
+                        svgType: 'fish_bird_gas',
+                        contentHtml: `
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
+                                <div class="p-4 rounded-2xl bg-sky-50/80 border border-sky-200 space-y-1.5">
+                                    <h4 class="font-bold text-sky-900">1. สัตว์ไม่มีกระดูกสันหลัง & ปลา</h4>
+                                    <ul class="list-disc list-inside space-y-1">
+                                        <li><b>อะมีบา พารามีเซียม ฟองน้ำ ไฮดรา พลานาเรีย:</b> แลกเปลี่ยนแก๊สผ่านเยื่อหุ้มเซลล์กับน้ำโดยตรง</li>
+                                        <li><b>ไส้เดือนดิน:</b> ใช้เซลล์ที่<b>ผิวหนังที่บางและเปียกชื้น</b> แพร่เข้าสู่หลอดเลือดฝอยใต้ผิวหนัง</li>
+                                        <li><b>แมลง:</b> ใช้<b>ระบบท่อลม (tracheal system)</b> อากาศเข้าทาง<b>ช่องหายใจ (spiracle)</b> → ท่อลม → <b>ท่อลมฝอย (tracheole)</b> สัมผัสกับเซลล์โดยตรง<u>ไม่ผ่านระบบหมุนเวียนเลือด</u></li>
+                                        <li><b>ปลา:</b> ใช้<b>เหงือก (gill)</b> โดยทิศทางการไหลของเลือดในซี่เหงือก<b>สวนทางกับทิศทางการไหลของน้ำ (countercurrent exchange)</b> ทำให้รับ $O_2$ ที่ละลายน้ำได้มากกว่า 80%</li>
+                                    </ul>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-teal-50/80 border border-teal-200 space-y-1.5">
+                                    <h4 class="font-bold text-teal-900">2. กบ และ สัตว์ปีก (นก)</h4>
+                                    <ul class="list-disc list-inside space-y-1">
+                                        <li><b>กบ:</b> ตัวอ่อนใช้เหงือก ตัวเต็มวัยใช้<b>ผิวหนังที่ชุ่มชื้นและปอด</b> อาศัยการยกและดึงพื้นปากด้านล่างดันอากาศเข้าสู่ปอด</li>
+                                        <li><b>นก:</b> ปอดเชื่อมต่อกับ<b>ถุงลม (air sac)</b> ส่วนหน้าและส่วนหลัง อากาศไหลผ่าน<b>แขนงหลอดลมในปอด (parabronchi)</b> ใน<b>ทิศทางเดียว</b> โดยต้องหายใจเข้าและออก <b>2 ครั้ง</b> จึงครบ 1 รอบวงจร (ถุงลมช่วยสำรองอากาศแต่ไม่ได้แลกเปลี่ยนแก๊ส)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        `,
+                        checkpoint: {
+                            q: 'เพราะเหตุใดการแลกเปลี่ยนแก๊สที่ซี่เหงือกของปลาจึงมีประสิทธิภาพสูงจนสามารถรับออกซิเจนที่ละลายในน้ำได้มากกว่า 80%?',
+                            options: [
+                                'เพราะน้ำและเลือดในซี่เหงือกไหลไปในทิศทางเดียวกันด้วยความเร็วสูง',
+                                'เพราะทิศทางการไหลของเลือดในซี่เหงือกสวนทางกับทิศทางการไหลของน้ำ (Countercurrent exchange) ทำให้ความดันย่อยของ O2 ในน้ำสูงกว่าในเลือดตลอดแนวซี่เหงือก',
+                                'เพราะปลามีถุงลม (air sac) ช่วยฟอกเลือดแทนหลอดเลือดฝอย',
+                                'เพราะปลาใช้ระบบท่อลมฝอยส่งแก๊สเข้าสู่เซลล์โดยตรง'
+                            ],
+                            correct: 1,
+                            explanation: 'ถูกต้อง! การแลกเปลี่ยนแบบสวนทางกัน (Countercurrent exchange) ที่ซี่เหงือกปลา ทำให้ตลอดแนวซี่เหงือก น้ำที่ไหลผ่านมีความดันย่อยของ O2 สูงกว่าในหลอดเลือดฝอยเสมอ O2 จึงแพร่เข้าสู่เลือดได้ตลอดแนว'
+                        }
+                    },
+                    {
+                        title: 'ฉากที่ 2: ทางเดินหายใจ ถุงลมปอด 300 ล้านถุง และความดันย่อยของแก๊ส',
+                        keyTip: 'รูจมูก -> โพรงจมูก -> คอหอย -> กล่องเสียง -> ท่อลม -> หลอดลม -> หลอดลมฝอย -> ถุงลม (Alveolus) • ความดันย่อย PO2 ในบรรยากาศระดับน้ำทะเล = 160 mmHg, ในถุงลม = 104 mmHg, ในเลือดฝอยที่เข้าปอด = 40 mmHg',
+                        lead: 'ยาน Aero-Oxy ของเราแล่นผ่านท่อลมที่มีกระดูกอ่อนรูปเกือกม้าค้ำจุน เข้าสู่ถุงลมปอดของมนุษย์แล้วกัปตัน!',
+                        svgType: 'respiratory_tract',
+                        contentHtml: `
+                            <div class="space-y-3 text-sm text-slate-700">
+                                <div class="p-4 rounded-2xl bg-sky-50/80 border border-sky-200 space-y-2">
+                                    <h4 class="font-bold text-sky-900">โครงสร้างทางเดินหายใจและความดันย่อยของแก๊ส (Partial Pressure)</h4>
+                                    <p><b>ลำดับทางเดินหายใจ:</b> รูจมูก → โพรงจมูก (มีซิเลียและเมือกดักฝุ่น) → คอหอย → กล่องเสียง → ท่อลม (trachea) → หลอดลม (bronchi) → หลอดลมฝอย (bronchiole) → <b>ถุงลมในปอด (alveolus) ประมาณ 300 ล้านถุง</b> (เพิ่มพื้นที่ผิวต่อปริมาตรสูงมาก ผนังบางชั้นเดียวและชื้น)</p>
+                                    <p><b>หลักการแพร่ตามความดันย่อย:</b> แก๊สจะแพร่จากบริเวณที่มีความดันย่อยสูงไปยังบริเวณที่มีความดันย่อยต่ำเสมอ:</p>
+                                    <ul class="list-disc list-inside text-xs sm:text-sm space-y-1 text-sky-900 font-medium">
+                                        <li>ในบรรยากาศระดับน้ำทะเล (ความดันรวม 760 mmHg, มี $O_2$ 21%): $P_{O_2} = 760 \times (21/100) \approx 160\text{ mmHg}$</li>
+                                        <li>ที่<b>ถุงลมปอด</b>มี $P_{O_2} = 104\text{ mmHg}$ สูงกว่าเลือดในหลอดเลือดฝอยที่มาจากหัวใจ ($P_{O_2} = 40\text{ mmHg}$) ดังนั้น $O_2$ จึงแพร่จากถุงลมเข้าสู่เลือด</li>
+                                        <li>ที่<b>เนื้อเยื่อร่างกาย</b>มีการใช้ $O_2$ ตลอดเวลา จึงมี $P_{O_2} < 40\text{ mmHg}$ และมี $P_{CO_2} > 45\text{ mmHg}$</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        `,
+                        checkpoint: {
+                            q: 'เหตุใดเมื่อนักท่องเที่ยวเดินทางขึ้นไปยังยอดเขาสูงมากกว่า 3,000 - 5,800 เมตรเหนือระดับน้ำทะเล จึงมีอาการวิงเวียน อ่อนเพลีย และหายใจลำบาก?',
+                            options: [
+                                'เพราะบนภูเขาสูงมีแก๊สคาร์บอนไดออกไซด์เป็นสัดส่วน 90% ของอากาศ',
+                                'เพราะบนพื้นที่สูงมีความดันอากาศลดต่ำลง ส่งผลให้ความดันย่อยของแก๊สออกซิเจน (PO2) ในอากาศและในถุงลมลดลง อัตราการแพร่ของ O2 เข้าสู่หลอดเลือดฝอยจึงลดลง',
+                                'เพราะกระดูกอ่อนที่ท่อลมปิดสนิทเมื่อเจออากาศเย็น',
+                                'เพราะปอดหยุดสร้างถุงลมเมื่ออยู่เหนือระดับน้ำทะเล'
+                            ],
+                            correct: 1,
+                            explanation: 'ถูกต้อง! บนพื้นที่สูงความดันบรรยากาศรวมลดต่ำลง ทำให้ความดันย่อยของออกซิเจน (PO2) ในอากาศที่หายใจเข้าและในถุงลมลดต่ำลง ความแตกต่างของความดันย่อยระหว่างถุงลมกับเลือดลดลง ร่างกายจึงได้รับ O2 ไม่เพียงพอ'
+                        }
+                    },
+                    {
+                        title: 'ฉากที่ 3: รถด่วนฮีโมโกลบิน และปฏิกิริยาการลำเลียงแก๊ส CO2',
+                        keyTip: 'O2 จับกับหมู่ฮีมของฮีโมโกลบินเป็น HbO2 (CO จับดีกว่า O2 ถึง 210 เท่า) • CO2 ส่วนใหญ่ทำปฏิกิริยากับน้ำในเม็ดเลือดแดงโดยมีเอนไซม์คาร์บอนิกแอนไฮเดรสเร่ง ได้กรดคาร์บอนิก (H2CO3) แตกตัวเป็น H+ และ HCO3- ลำเลียงในพลาสมา',
+                        lead: 'มาดูกลไกเคมีในเซลล์เม็ดเลือดแดงกันกัปตัน! ทั้งการจับออกซิเจนของหมู่ฮีม และการเปลี่ยนรูปของคาร์บอนไดออกไซด์ด้วยเอนไซม์คาร์บอนิกแอนไฮเดรส!',
+                        svgType: 'gas_transport',
+                        contentHtml: `
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
+                                <div class="p-4 rounded-2xl bg-rose-50/80 border border-rose-200 space-y-2">
+                                    <h4 class="font-bold text-rose-900">1. การลำเลียงแก๊สออกซิเจน ($O_2$)</h4>
+                                    <p>$O_2$ ที่แพร่เข้าสู่หลอดเลือดฝอยรอบถุงลมจะจับกับธาตุเหล็กใน<b>หมู่ฮีม (heme group)</b> ของ<b>ฮีโมโกลบิน (Hb)</b> ในเม็ดเลือดแดง กลายเป็น<b>ออกซีฮีโมโกลบิน ($HbO_2$)</b> เมื่อไปถึงเนื้อเยื่อ $HbO_2$ จะสลายตัวปล่อย $O_2$ ให้แก่เซลล์</p>
+                                    <p class="text-xs text-rose-800 font-semibold">* <b>แก๊สคาร์บอนมอนอกไซด์ (CO)</b> สามารถจับกับฮีโมโกลบินได้ดีกว่า $O_2$ มากกว่า <b>210 เท่า</b> จึงขัดขวางการลำเลียง $O_2$ อย่างรุนแรง</p>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-sky-50/80 border border-sky-200 space-y-2">
+                                    <h4 class="font-bold text-sky-900">2. การลำเลียงแก๊สคาร์บอนไดออกไซด์ ($CO_2$)</h4>
+                                    <p>$CO_2$ จากเนื้อเยื่อส่วนใหญ่จะเข้าสู่<b>เซลล์เม็ดเลือดแดง</b> แล้วทำปฏิกิริยากับน้ำ โดยมีเอนไซม์ <b>คาร์บอนิกแอนไฮเดรส (carbonic anhydrase)</b> เป็นตัวเร่งปฏิกิริยา ได้เป็น<b>กรดคาร์บอนิก ($H_2CO_3$)</b> ซึ่งจะแตกตัวได้<b>ไฮโดรเจนไอออน ($H^+$)</b> และ<b>ไฮโดรเจนคาร์บอเนตไอออน ($HCO_3^-$)</b></p>
+                                    <p class="text-xs text-sky-800 font-semibold">จากนั้น $HCO_3^-$ จะแพร่แบบฟาซิลิเทตออกสู่<b>พลาสมา</b> เมื่อเลือดไหลไปถึงถุงลมปอด ปฏิกิริยาจะย้อนกลับได้ $CO_2$ แพร่ออกสู่ถุงลม</p>
+                                </div>
+                            </div>
+                        `,
+                        checkpoint: {
+                            q: 'เอนไซม์คาร์บอนิกแอนไฮเดรส (Carbonic anhydrase) ในเซลล์เม็ดเลือดแดงทำหน้าที่เร่งปฏิกิริยาใดในการลำเลียงแก๊ส?',
+                            options: [
+                                'เร่งปฏิกิริยาระหว่าง CO2 กับน้ำ (H2O) ให้เกิดเป็นกรดคาร์บอนิก (H2CO3) ทั้งไปและกลับ',
+                                'เร่งการสลายตัวของฮีโมโกลบินให้กลายเป็นกรดแอมิโน',
+                                'เปลี่ยนแก๊สไนโตรเจนในพลาสมาให้เป็นแก๊สออกซิเจน',
+                                'เปลี่ยนกรดแลกติกในกล้ามเนื้อให้เป็นไกลโคเจน'
+                            ],
+                            correct: 0,
+                            explanation: 'ถูกต้อง! เอนไซม์คาร์บอนิกแอนไฮเดรสในเม็ดเลือดแดงช่วยเร่งปฏิกิริยา CO2 + H2O ⇄ H2CO3 (กรดคาร์บอนิก) ก่อนจะแตกตัวเป็น H+ และ HCO3- เพื่อลำเลียงไปในพลาสมา'
+                        }
+                    },
+                    {
+                        title: 'ฉากที่ 4: กลไกการหายใจ สไปโรมิเตอร์ และการควบคุมสมดุลกรด-เบส',
+                        keyTip: 'หายใจเข้า: กะบังลมหดตัวเคลื่อนต่ำลง + ซี่โครงแถบนอกหดตัวยกซี่โครงขึ้น • หายใจปกติ 500 mL, จุเต็มที่ 5,800 mL, ตกค้าง 1,200 mL • พอนส์และเมดัลลาออบลองกาตาสั่งเพิ่มการหายใจเมื่อ CO2 และ H+ ในเลือดสูงขึ้น (pH ลดลง)',
+                        lead: 'ฉากสุดท้ายของบทที่ 14 แล้วกัปตัน! มาตรวจสอบการทำงานของกล้ามเนื้อหายใจ กราฟสไปโรมิเตอร์ และศูนย์ควบคุมการหายใจที่สมองกัน!',
+                        svgType: 'spirometer_brain',
+                        contentHtml: `
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
+                                <div class="p-4 rounded-2xl bg-sky-50/80 border border-sky-200 space-y-1.5">
+                                    <h4 class="font-bold text-sky-900">1. กลไกการหายใจ & ปริมาตรอากาศในปอด</h4>
+                                    <p><b>ขณะหายใจเข้าปกติ:</b> กล้ามเนื้อกะบังลม<b>หดตัว</b> (เคลื่อนต่ำลง) + กล้ามเนื้อระหว่างกระดูกซี่โครง<b>แถบนอกหดตัว</b> (กระดูกซี่โครงยกสูงขึ้น) → ปริมาตรช่องอกเพิ่มขึ้น ความดันในปอดลดลง</p>
+                                    <p><b>ปริมาตรจากสไปโรมิเตอร์:</b> หายใจเข้า-ออกปกติครั้งละ <b>500 mL</b>, หายใจเข้าเต็มที่จุได้ถึง <b>5,800 mL</b>, และแม้หายใจออกเต็มที่แล้วก็ยังมี<b>อากาศตกค้างในปอดประมาณ 1,200 mL</b></p>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-teal-50/80 border border-teal-200 space-y-1.5">
+                                    <h4 class="font-bold text-teal-900">2. ศูนย์ควบคุมการหายใจ & โรคระบบหายใจ</h4>
+                                    <p><b>นอกอำนาจจิตใจ:</b> ควบคุมโดยสมองส่วน<b>พอนส์ (pons)</b> และ<b>เมดัลลาออบลองกาตา (medulla oblongata)</b> โดยตรวจจับความเข้มข้นของ $CO_2$ และ $H^+$ ในเลือด เมื่อ $CO_2$ สูงขึ้น (ค่า pH เลือดลดลง) สมองจะสั่งให้<b>เพิ่มอัตราการหายใจ</b></p>
+                                    <p><b>โรคสำคัญ:</b> <b>โรคถุงลมโป่งพอง</b> (ผนังถุงลมทะลุรวมกัน พื้นที่ผิวแลกเปลี่ยนแก๊สลดลง มักเกิดจากควันบุหรี่), <b>โรคปอดบวม</b> (มีของเหลวในถุงลม), <b>วัณโรค</b>, และ<b>หอบหืด</b> (หลอดลมตีบ)</p>
+                                </div>
+                            </div>
+                        `,
+                        checkpoint: {
+                            q: 'เมื่อร่างกายออกกำลังกายอย่างหนัก ปริมาณ CO2 และ H+ ในเลือดจะเพิ่มขึ้น (ค่า pH ของเลือดลดลง) ร่างกายจะปรับสมดุลโดยอาศัยกลไกใด?',
+                            options: [
+                                'สมองส่วนพอนส์และเมดัลลาออบลองกาตาส่งสัญญาณไปกระตุ้นกล้ามเนื้อหายใจให้เพิ่มอัตราการหายใจ เพื่อขับ CO2 ออกจากปอดเร็วขึ้น',
+                                'สมองสั่งให้ลดอัตราการหายใจลงเพื่อกักเก็บ CO2 ไว้ในถุงลม',
+                                'กล้ามเนื้อกะบังลมคลายตัวค้างไว้เพื่อเพิ่มความดันในช่องอกอย่างถาวร',
+                                'ถุงลมในปอดลดจำนวนลงเพื่อลดการรับแก๊สออกซิเจน'
+                            ],
+                            correct: 0,
+                            explanation: 'ถูกต้อง! เมื่อ CO2 และ H+ ในเลือดสูงขึ้น (เลือดมีความเป็นกรดเพิ่มขึ้น) จะไปกระตุ้นศูนย์ควบคุมการหายใจที่สมองส่วนพอนส์และเมดัลลาออบลองกาตา ให้สั่งเพิ่มอัตราและความลึกในการหายใจเพื่อเร่งขับ CO2 ออก'
+                        }
+                    }
+                ]
+            },
+            {
+                id: 'ch15',
+                number: 'บทที่ 15',
+                title: 'ระบบหมุนเวียนเลือดและน้ำเหลือง',
+                shortSub: 'หัวใจ 4 ห้อง & หมู่เลือด',
+                color: 'rose',
+                icon: 'fa-heart-pulse',
+                scenes: [
+                    {
+                        title: 'ฉากที่ 1: ระบบหมุนเวียนเลือด หัวใจ 4 ห้อง และทิศทางการไหลของเลือด',
+                        keyTip: 'แมลง กุ้ง หอย มีระบบหมุนเวียนเลือดแบบเปิด • ไส้เดือนดินและสัตว์มีกระดูกสันหลังมีระบบแบบปิด • เลือดเข้าเอเทรียมขวา -> ลิ้นไตรคัสพิด -> เวนทริเคิลขวา -> ปอด -> เอเทรียมซ้าย -> ลิ้นไบคัสพิด -> เวนทริเคิลซ้าย -> เอออร์ตา',
+                        lead: 'กัปตัน! ตอนนี้เว็บไซต์เปลี่ยนเข้าสู่ธีมสีชมพูคอรัล-แดงทับทิมของบทที่ 15 ระบบหมุนเวียนเลือดแล้ว มาสำรวจโครงสร้างหัวใจทั้ง 4 ห้องและลิ้นหัวใจกัน!',
+                        svgType: 'heart_circulation',
+                        contentHtml: `
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
+                                <div class="p-4 rounded-2xl bg-rose-50/80 border border-rose-200 space-y-1.5">
+                                    <h4 class="font-bold text-rose-900">1. ระบบหมุนเวียนเลือดแบบเปิด vs แบบปิด</h4>
+                                    <p><b>แบบเปิด (Open circulatory system):</b> เลือดมีช่วงที่ไหลออกจากหลอดเลือดเข้าสู่ช่องว่างในลำตัว (hemocoel) สัมผัสกับเซลล์โดยตรง พบใน <b>แมลง กุ้ง ปู หอย</b></p>
+                                    <p><b>แบบปิด (Closed circulatory system):</b> เลือดไหลอยู่ภายในหลอดเลือดตลอดเวลา พบใน <b>ไส้เดือนดิน หมึก และสัตว์มีกระดูกสันหลังทุกชนิด</b> (ปลาหัวใจ 2 ห้อง, สัตว์สะเทินน้ำสะเทินบก 3 ห้อง, สัตว์เลี้ยงลูกด้วยน้ำนม 4 ห้องสมบูรณ์)</p>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-pink-50/80 border border-pink-200 space-y-1.5">
+                                    <h4 class="font-bold text-pink-900">2. หัวใจ 4 ห้องและลิ้นหัวใจของมนุษย์</h4>
+                                    <p><b>ซีกขวา (รับเลือด $O_2$ ต่ำ):</b> เลือดจากหลอดเลือดเวนาคาวาเข้าสู่<b>เอเทรียมขวา</b> → ผ่าน<b>ลิ้นไตรคัสพิด (tricuspid)</b> → <b>เวนทริเคิลขวา</b> → ผ่านลิ้นพัลโมนารีเซมิลูนาร์ → <b>พัลโมนารีอาร์เทอรี</b>ไปฟอกที่ปอด</p>
+                                    <p><b>ซีกซ้าย (รับเลือด $O_2$ สูง):</b> เลือดจากปอดผ่าน<b>พัลโมนารีเวน</b>เข้าสู่<b>เอเทรียมซ้าย</b> → ผ่าน<b>ลิ้นไบคัสพิด/ไมทรัล (bicuspid)</b> → <b>เวนทริเคิลซ้าย (ผนังกล้ามเนื้อหนาที่สุด)</b> → ผ่านลิ้นเอออร์ติกเซมิลูนาร์ → <b>เอออร์ตา (aorta)</b> ไปเลี้ยงร่างกาย</p>
+                                </div>
+                            </div>
+                        `,
+                        checkpoint: {
+                            q: 'ข้อใดเรียงลำดับทิศทางการไหลของเลือดจากร่างกายเข้าสู่หัวใจ ไปฟอกที่ปอด และกลับมาที่หัวใจเพื่อส่งไปเลี้ยงร่างกายได้ถูกต้อง?',
+                            options: [
+                                'เวนาคาวา -> เอเทรียมขวา -> ลิ้นไตรคัสพิด -> เวนทริเคิลขวา -> ปอด -> เอเทรียมซ้าย -> ลิ้นไบคัสพิด -> เวนทริเคิลซ้าย -> เอออร์ตา',
+                                'เอออร์ตา -> เอเทรียมซ้าย -> เวนทริเคิลซ้าย -> ปอด -> เอเทรียมขวา -> เวนทริเคิลขวา',
+                                'เวนาคาวา -> เอเทรียมซ้าย -> ลิ้นไตรคัสพิด -> เวนทริเคิลขวา -> ปอด -> เอออร์ตา',
+                                'พัลโมนารีอาร์เทอรี -> เอเทรียมขวา -> เวนทริเคิลซ้าย -> ปอด -> เวนาคาวา'
+                            ],
+                            correct: 0,
+                            explanation: 'ถูกต้อง! เลือด O2 ต่ำจากเวนาคาวาเข้าเอเทรียมขวา ผ่านลิ้นไตรคัสพิดลงเวนทริเคิลขวา ส่งไปปอด เมื่อแลกเปลี่ยนแก๊สแล้วเข้าสู่เอเทรียมซ้าย ผ่านลิ้นไบคัสพิดลงเวนทริเคิลซ้าย แล้วบีบตัวออกทางเอออร์ตา'
+                        }
+                    },
+                    {
+                        title: 'ฉากที่ 2: ส่วนประกอบของเลือด หมู่เลือด ABO/Rh และระบบน้ำเหลือง',
+                        keyTip: 'หลักการให้เลือด: แอนติเจนของผู้ให้ห้ามตรงกับแอนติบอดีของผู้รับ • หมู่ O ไม่มีแอนติเจน A/B • หมู่ AB ไม่มีแอนติบอดี A/B • ระบบน้ำเหลืองช่วยคืนของเหลวกลับสู่หัวใจ ลำเลียงไคโลไมครอน และดักจับเชื้อโรคที่ต่อมน้ำเหลือง',
+                        lead: 'มาต่อกันที่ฉากที่ 2 ของระบบหมุนเวียนเลือดกัปตัน! เรียนรู้เรื่องเซลล์เม็ดเลือด การให้และรับเลือดในระบบ ABO และ Rh รวมถึงบทบาทสำคัญของระบบน้ำเหลือง!',
+                        svgType: 'blood_groups',
+                        contentHtml: `
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
+                                <div class="p-4 rounded-2xl bg-rose-50/80 border border-rose-200 space-y-1.5">
+                                    <h4 class="font-bold text-rose-900">1. ส่วนประกอบของเลือด & หมู่เลือด ABO / Rh</h4>
+                                    <p><b>เลือด:</b> ประกอบด้วยพลาสมา (55%) และเม็ดเลือด (45% ได้แก่ เซลล์เม็ดเลือดแดง, เซลล์เม็ดเลือดขาว, และเพลตเลตหรือเกล็ดเลือดที่ช่วยให้เลือดแข็งตัว)</p>
+                                    <p><b>หมู่เลือด ABO:</b> พิจารณาจากแอนติเจนบนผิวเม็ดเลือดแดง และแอนติบอดีในพลาสมา (หมู่ A มีแอนติเจน A/แอนติบอดี B, หมู่ B มีแอนติเจน B/แอนติบอดี A, หมู่ AB มีแอนติเจน A และ B แต่ไม่มีแอนติบอดี, หมู่ O ไม่มีแอนติเจนแต่มีแอนติบอดีทั้ง A และ B) <b>หลักสำคัญ: แอนติเจนของผู้ให้ห้ามตรงกับแอนติบอดีของผู้รับ</b></p>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 space-y-1.5">
+                                    <h4 class="font-bold text-amber-900">2. ความดันเลือด และ ระบบน้ำเหลือง</h4>
+                                    <p><b>ความดันเลือด:</b> วัดเป็นค่าความดันซิสโทลิก (ขณะหัวใจบีบตัว) / ความดันไดแอสโทลิก (ขณะหัวใจคลายตัว) ในคนปกติประมาณ 120/80 mmHg โดยเลือดในหลอดเลือดอาร์เทอรีมีความดันและความเร็วสูงสุด ส่วนหลอดเลือดฝอยมีความเร็วต่ำสุดเพื่อแลกเปลี่ยนสาร</p>
+                                    <p><b>ระบบน้ำเหลือง:</b> ประกอบด้วยน้ำเหลือง หลอดน้ำเหลือง และอวัยวะน้ำเหลือง (ต่อมน้ำเหลือง ม้าม ต่อมไทมัส ทอนซิล) ทำหน้าที่นำของเหลวระหว่างเซลล์กลับเข้าสู่หลอดเลือดเวนใกล้หัวใจ ลำเลียงลิพิด และสร้างภูมิคุ้มกัน</p>
+                                </div>
+                            </div>
+                        `,
+                        checkpoint: {
+                            q: 'เหตุใดผู้ที่มีเลือด "หมู่ O" จึงไม่สามารถรับเซลล์เม็ดเลือดแดงจากผู้ที่มีเลือดหมู่ A, B หรือ AB ได้?',
+                            options: [
+                                'เพราะในพลาสมาของคนหมู่ O มีทั้งแอนติบอดี A และแอนติบอดี B ซึ่งจะทำปฏิกิริยากับแอนติเจนบนผิวเม็ดเลือดแดงของผู้ให้จนเกิดการจับกลุ่มตกตะกอน',
+                                'เพราะบนผิวเม็ดเลือดแดงของคนหมู่ O มีแอนติเจนทั้ง A และ B อยู่เต็มไปหมด',
+                                'เพราะคนหมู่ O ไม่มีเซลล์เม็ดเลือดแดงและไม่มีพลาสมา',
+                                'เพราะเลือดหมู่ O ไหลเวียนอยู่ในหลอดน้ำเหลืองเท่านั้น'
+                            ],
+                            correct: 0,
+                            explanation: 'ถูกต้อง! คนหมู่เลือด O ไม่มีแอนติเจน A และ B บนผิวเม็ดเลือดแดง แต่ในพลาสมามีทั้งแอนติบอดี A และแอนติบอดี B ดังนั้นจึงรับเม็ดเลือดแดงได้เฉพาะจากหมู่ O ด้วยกันเท่านั้น'
+                        }
+                    }
+                ]
+            },
+            {
+                id: 'ch16',
+                number: 'บทที่ 16',
+                title: 'ระบบภูมิคุ้มกัน',
+                shortSub: 'เม็ดเลือดขาว แอนติบอดี & วัคซีน',
+                color: 'purple',
+                icon: 'fa-shield-halved',
+                scenes: [
+                    {
+                        title: 'ฉากที่ 1: กลไกต่อต้านสิ่งแปลกปลอมแบบไม่จำเพาะและแบบจำเพาะ',
+                        keyTip: 'แบบไม่จำเพาะ: ผิวหนัง กรดในกระเพาะ ฟาโกไซต์ (นิวโทรฟิล แมโครฟาจ) และการอักเสบ • แบบจำเพาะ: ลิมโฟไซต์ เซลล์ B (พัฒนาเป็นพลาสมาเซลล์หลั่งแอนติบอดี) และเซลล์ T (CD4 กระตุ้นภูมิ, CD8 ทำลายเซลล์ติดเชื้อ)',
+                        lead: 'กัปตัน! ตอนนี้เราเข้าสู่ธีมสีม่วงลาเวนเดอร์และโล่สีทองของบทที่ 16 ระบบภูมิคุ้มกัน มาบัญชาการกองทัพเม็ดเลือดขาวทั้งด่านป้องกันแบบไม่จำเพาะและแบบจำเพาะกัน!',
+                        svgType: 'immune_defense',
+                        contentHtml: `
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
+                                <div class="p-4 rounded-2xl bg-purple-50/80 border border-purple-200 space-y-1.5">
+                                    <h4 class="font-bold text-purple-900">1. กลไกต่อต้านแบบไม่จำเพาะ (Innate Immunity)</h4>
+                                    <p>ป้องกันสิ่งแปลกปลอมทุกชนิดโดยไม่จำเพาะเจาะจง เช่น ผิวหนัง เหงื่อ น้ำตา (มีไลโซไซม์) เมือกและซิเลียในทางเดินหายใจ กรด HCl ในกระเพาะอาหาร รวมถึงเซลล์เม็ดเลือดขาวกลุ่ม<b>ฟาโกไซต์ (นิวโทรฟิล, โมโนไซต์/แมโครฟาจ)</b> ที่เข้าจับกินเชื้อโรค และกระบวนการ<b>อักเสบ (inflammation)</b> ที่มีอาการบวม แดง ร้อน ปวด</p>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 space-y-1.5">
+                                    <h4 class="font-bold text-amber-900">2. กลไกต่อต้านแบบจำเพาะ (Adaptive Immunity)</h4>
+                                    <p>ทำงานโดยเซลล์เม็ดเลือดขาวกลุ่ม<b>ลิมโฟไซต์ (Lymphocyte)</b> ได้แก่:</p>
+                                    <ul class="list-disc list-inside text-xs sm:text-sm space-y-1">
+                                        <li><b>เซลล์บี (B-cell):</b> เมื่อถูกกระตุ้นจะพัฒนาเป็น<b>พลาสมาเซลล์ (plasma cell)</b> สร้างและหลั่ง<b>แอนติบอดี (antibody)</b> เข้าจับแอนติเจนอย่างจำเพาะ และสร้าง<b>เซลล์ความจำ (memory cell)</b></li>
+                                        <li><b>เซลล์ที (T-cell):</b> พัฒนาที่ต่อมไทมัส แบ่งเป็น<b>เซลล์ทีผู้ช่วย (Helper T-cell / CD4)</b> ทำหน้าที่กระตุ้น B-cell และ T-cell อื่นๆ และ<b>เซลล์ทีทำลายสิ่งแปลกปลอม (Cytotoxic T-cell / CD8)</b> ทำลายเซลล์ที่ติดเชื้อไวรัสหรือเซลล์มะเร็ง</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        `,
+                        checkpoint: {
+                            q: 'เซลล์เม็ดเลือดขาวชนิดใดทำหน้าที่พัฒนาไปเป็น "พลาสมาเซลล์ (Plasma cell)" เพื่อสร้างและหลั่งแอนติบอดี (Antibody) ที่จำเพาะต่อแอนติเจน?',
+                            options: [
+                                'นิวโทรฟิล (Neutrophil)',
+                                'เซลล์บี (B-cell / B-lymphocyte)',
+                                'อีโอซิโนฟิล (Eosinophil)',
+                                'เพลตเลต (Platelet)'
+                            ],
+                            correct: 1,
+                            explanation: 'ถูกต้อง! เซลล์บี (B-cell) ในระบบภูมิคุ้มกันแบบจำเพาะ เมื่อถูกกระตุ้นด้วยแอนติเจนจะแบ่งเซลล์และพัฒนาเป็นพลาสมาเซลล์เพื่อสร้างแอนติบอดี และบางส่วนพัฒนาเป็นเซลล์ความจำ'
+                        }
+                    },
+                    {
+                        title: 'ฉากที่ 2: การสร้างเสริมภูมิคุ้มกัน (วัคซีน vs เซรุ่ม) และความผิดปกติ',
+                        keyTip: 'ภูมิคุ้มกันก่อเอง (Active): รับแอนติเจน เช่น วัคซีน ทอกซอยด์ เกิดเซลล์ความจำ อยู่ได้นาน • ภูมิคุ้มกันรับมา (Passive): รับแอนติบอดีโดยตรง เช่น น้ำนมแม่ เซรุ่มแก้พิษงู ออกฤทธิ์ทันทีแต่อยู่ได้สั้น • HIV ทำลายเซลล์ทีผู้ช่วย (CD4)',
+                        lead: 'ฉากที่ 2 ของระบบภูมิคุ้มกัน! มาแยกความแตกต่างระหว่างวัคซีนกับเซรุ่ม และเรียนรู้โรคที่เกิดจากความผิดปกติของระบบภูมิคุ้มกัน!',
+                        svgType: 'immune_defense',
+                        contentHtml: `
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
+                                <div class="p-4 rounded-2xl bg-purple-50/80 border border-purple-200 space-y-1.5">
+                                    <h4 class="font-bold text-purple-900">1. ภูมิคุ้มกันก่อเอง vs ภูมิคุ้มกันรับมา</h4>
+                                    <p><b>ภูมิคุ้มกันก่อเอง (Active immunization):</b> ร่างกายได้รับแอนติเจนที่อ่อนฤทธิ์หรือตายแล้ว เช่น <b>วัคซีน (vaccine)</b> หรือ<b>ทอกซอยด์ (toxoid)</b> ไปกระตุ้นให้ร่างกายสร้างแอนติบอดีและเซลล์ความจำเอง (เกิดช้าแต่อยู่ได้นาน)</p>
+                                    <p><b>ภูมิคุ้มกันรับมา (Passive immunization):</b> ร่างกายได้รับแอนติบอดีเข้ามาโดยตรง เช่น แอนติบอดีผ่านรก, น้ำนมแม่ หรือการฉีด<b>เซรุ่ม (serum)</b> แก้พิษงู/พิษสุนัขบ้า (ออกฤทธิ์คุ้มกันทันทีแต่อยู่ได้ไม่นาน)</p>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-rose-50/80 border border-rose-200 space-y-1.5">
+                                    <h4 class="font-bold text-rose-900">2. ความผิดปกติของระบบภูมิคุ้มกัน</h4>
+                                    <ul class="list-disc list-inside text-xs sm:text-sm space-y-1">
+                                        <li><b>โรคภูมิแพ้ (Allergy):</b> ภูมิคุ้มกันตอบสนองต่อสารก่อภูมิแพ้ไวเกินไป มีการหลั่งสารฮิสทามีน</li>
+                                        <li><b>โรคลูปัส หรือ SLE:</b> ร่างกายสร้างแอนติบอดีขึ้นมาทำลายเนื้อเยื่อและอวัยวะของตนเอง (Autoimmune disease)</li>
+                                        <li><b>โรคเอดส์ (AIDS):</b> เกิดจากการติดเชื้อไวรัส <b>HIV</b> ซึ่งเข้าไปทำลายเม็ดเลือดขาวชนิด<b>เซลล์ทีผู้ช่วย (Helper T-cell / CD4)</b> ทำให้ภูมิคุ้มกันบกพร่อง</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        `,
+                        checkpoint: {
+                            q: 'ข้อใดจับคู่รูปแบบการสร้างเสริมภูมิคุ้มกัน และตัวอย่างได้อย่างถูกต้อง?',
+                            options: [
+                                'ภูมิคุ้มกันรับมา (Passive): การฉีดวัคซีนป้องกันโรคหัดและบาดทะยัก',
+                                'ภูมิคุ้มกันก่อเอง (Active): การฉีดเซรุ่มแก้พิษงูเห่าทันทีหลังถูกกัด',
+                                'ภูมิคุ้มกันรับมา (Passive): ทารกได้รับแอนติบอดีจากน้ำนมแม่ และการฉีดเซรุ่มแก้พิษงู',
+                                'ภูมิคุ้มกันก่อเอง (Active): เชื้อไวรัส HIV เข้าทำลายเซลล์เม็ดเลือดขาว CD4'
+                            ],
+                            correct: 2,
+                            explanation: 'ถูกต้อง! การได้รับแอนติบอดีจากน้ำนมแม่ และการฉีดเซรุ่มแก้พิษงู เป็นการรับแอนติบอดีสำเร็จรูปเข้าสู่ร่างกายโดยตรง จึงจัดเป็นภูมิคุ้มกันรับมา (Passive immunization)'
+                        }
+                    }
+                ]
+            },
+            {
+                id: 'ch17',
+                number: 'บทที่ 17',
+                title: 'ระบบขับถ่าย',
+                shortSub: 'หน่วยไต การกรอง & สมดุลน้ำ',
+                color: 'emerald',
+                icon: 'fa-filter',
+                scenes: [
+                    {
+                        title: 'ฉากที่ 1: การขับถ่ายของสัตว์ และโครงสร้างของไตมนุษย์',
+                        keyTip: 'พารามีเซียมใช้คอนแทร็กไทล์แวคิวโอล • พลานาเรียใช้เฟลมเซลล์ • ไส้เดือนดินใช้เนฟริเดียม • แมลงใช้ท่อมัลพิเกียนขับกรดยูริก • ไตมนุษย์มีหน่วยไต (Nephron) ข้างละประมาณ 1 ล้านหน่วย',
+                        lead: 'เข้าสู่บทสุดท้ายในธีมสีเขียวมรกตและสายน้ำสะอาดของบทที่ 17 ระบบขับถ่ายแล้วกัปตัน! มาสำรวจโครงสร้างขับถ่ายของสัตว์แต่ละกลุ่มและโครงสร้างภายในของไตมนุษย์กัน!',
+                        svgType: 'kidney_nephron',
+                        contentHtml: `
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
+                                <div class="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-1.5">
+                                    <h4 class="font-bold text-emerald-900">1. โครงสร้างการขับถ่ายของสัตว์ & ของเสียไนโตรเจน</h4>
+                                    <ul class="list-disc list-inside text-xs sm:text-sm space-y-1">
+                                        <li><b>อะมีบา & พารามีเซียม:</b> ใช้<b>คอนแทร็กไทล์แวคิวโอล (contractile vacuole)</b> ขับน้ำส่วนเกินและของเสีย</li>
+                                        <li><b>พลานาเรีย:</b> ใช้<b>เฟลมเซลล์ (flame cell)</b> โบกพัดของเสียออกทางรูขับถ่าย</li>
+                                        <li><b>ไส้เดือนดิน:</b> ใช้<b>เนฟริเดียม (nephridium)</b> ที่มีอยู่ทุกปล้อง</li>
+                                        <li><b>แมลง:</b> ใช้<b>ท่อมัลพิเกียน (Malpighian tubule)</b> เชื่อมต่อกับทางเดินอาหาร ขับของเสียในรูป<b>กรดยูริก (uric acid)</b> เช่นเดียวกับนกและสัตว์เลื้อยคลานเพื่อสงวนน้ำไว้ในร่างกาย</li>
+                                    </ul>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-teal-50/80 border border-teal-200 space-y-1.5">
+                                    <h4 class="font-bold text-teal-900">2. ระบบขับถ่ายของมนุษย์และหน่วยไต (Nephron)</h4>
+                                    <p>ประกอบด้วย <b>ไต (kidney) 1 คู่</b>, ท่อไต (ureter), กระเพาะปัสสาวะ (urinary bladder) และท่อปัสสาวะ (urethra) เนื้อไตแบ่งเป็นส่วนนอก (คอร์เทกซ์) และส่วนใน (เมดัลลา) ภายในมี<b>หน่วยไต (nephron) ข้างละประมาณ 1 ล้านหน่วย</b></p>
+                                    <p>โครงสร้างหน่วยไตประกอบด้วย <b>โบว์แมนแคปซูล</b> (หุ้มกระจุกหลอดเลือดฝอย<b>โกลเมอรูลัส</b>), ท่อขดส่วนต้น, ห่วงเฮนเล, ท่อขดส่วนท้าย และเปิดเข้าสู่<b>ท่อรวม (collecting duct)</b></p>
+                                </div>
+                            </div>
+                        `,
+                        checkpoint: {
+                            q: 'แมลงและนกมีการปรับตัวในการขับถ่ายของเสียที่มีไนโตรเจนเป็นองค์ประกอบออกมาในรูปใด เพื่อช่วยลดการสูญเสียน้ำของร่างกาย?',
+                            options: [
+                                'แอมโมเนีย (Ammonia) ที่ละลายน้ำได้สูงมาก',
+                                'กรดยูริก (Uric acid) ซึ่งมีลักษณะกึ่งแข็งกึ่งเหลวและใช้น้ำในการขับออกน้อยที่สุด',
+                                'กรดไฮโดรคลอริก (HCl)',
+                                'กรดแอมิโนอิสระและกลูโคส'
+                            ],
+                            correct: 1,
+                            explanation: 'ถูกต้อง! แมลง (ใช้ท่อมัลพิเกียน) สัตว์ปีก และสัตว์เลื้อยคลาน ขับถ่ายของเสียไนโตรเจนในรูปกรดยูริก (uric acid) ซึ่งมีพิษน้อยและตกผลึกกึ่งแข็งกึ่งเหลว ทำให้สูญเสียน้ำน้อยที่สุด'
+                        }
+                    },
+                    {
+                        title: 'ฉากที่ 2: การทำงานของหน่วยไต 3 ขั้นตอน และการรักษาดุลยภาพด้วย ADH',
+                        keyTip: '1) การกรองที่โกลเมอรูลัส (เม็ดเลือดแดงและโปรตีนก้อนใหญ่ไม่ผ่าน) 2) การดูดกลับที่ท่อขดส่วนต้น (ดูดกลับกลูโคสและกรดแอมิโน 100%) 3) การหลั่งสาร • เมื่อร่างกายขาดน้ำ ต่อมใต้สมองส่วนหลังหลั่ง ADH เพิ่มการดูดกลับน้ำที่ท่อรวม',
+                        lead: 'ฉากสุดท้ายของการเดินทางใน Bio-Odyssey แล้วกัปตัน! มาดู 3 ขั้นตอนในการสร้างปัสสาวะของหน่วยไต และบทบาทของฮอร์โมน ADH ในการรักษาดุลยภาพน้ำ!',
+                        svgType: 'kidney_nephron',
+                        contentHtml: `
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
+                                <div class="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-1.5">
+                                    <h4 class="font-bold text-emerald-900">1. การทำงาน 3 ขั้นตอนของหน่วยไต</h4>
+                                    <ul class="list-disc list-inside text-xs sm:text-sm space-y-1">
+                                        <li><b>1) การกรอง (Filtration):</b> เกิดที่<b>โกลเมอรูลัส</b>ผ่านเข้าสู่โบว์แมนแคปซูล น้ำ กลูโคส กรดแอมิโน ยูเรีย และไอออนขนาดเล็กผ่านได้ <u>ยกเว้นเซลล์เม็ดเลือดและโปรตีนขนาดใหญ่</u></li>
+                                        <li><b>2) การดูดกลับ (Reabsorption):</b> เกิดมากที่สุดที่<b>ท่อขดส่วนต้น</b> โดย<b>กลูโคสและกรดแอมิโนจะถูกดูดกลับเข้าสู่เลือด 100%</b> ด้วยวิธีแอกทีฟทรานสปอร์ต</li>
+                                        <li><b>3) การหลั่ง (Secretion):</b> เซลล์ท่อหน่วยไตหลั่งสารบางชนิด เช่น $H^+$, $K^+$, แอมโมเนีย และยาบางชนิดออกจากเลือดเข้าสู่ของเหลวในท่อหน่วยไตเพื่อรักษาสมดุลกรด-เบส</li>
+                                    </ul>
+                                </div>
+                                <div class="p-4 rounded-2xl bg-cyan-50/80 border border-cyan-200 space-y-1.5">
+                                    <h4 class="font-bold text-cyan-900">2. การรักษาดุลยภาพของน้ำด้วยฮอร์โมน ADH</h4>
+                                    <p>เมื่อร่างกายสูญเสียน้ำมาก (เช่น เสียเหงื่อ หรือดื่มน้ำน้อย) ความเข้มข้นของเลือด (แรงดันออสโมติก) จะสูงขึ้น ไปกระตุ้นสมองส่วน<b>ไฮโพทาลามัส</b> ส่งสัญญาณให้<b>ต่อมใต้สมองส่วนหลัง</b>หลั่งฮอร์โมน <b>ADH (แอนติไดยูเรติกฮอร์โมน)</b> เข้าสู่กระแสเลือด</p>
+                                    <p class="text-xs text-teal-900 font-semibold"><b>ผลของ ADH:</b> กระตุ้นท่อขดส่วนท้ายและ<b>ท่อรวม (collecting duct)</b> ให้ดูดกลับน้ำเข้าสู่หลอดเลือดมากขึ้น ทำให้ปัสสาวะมีปริมาณน้อยลงและเข้มข้นขึ้น</p>
+                                </div>
+                            </div>
+                        `,
+                        checkpoint: {
+                            q: 'ในคนปกติที่มีสุขภาพดี สารใดต่อไปนี้จะถูกกรองผ่านโกลเมอรูลัสได้ แต่จะถูกดูดกลับเข้าสู่หลอดเลือดฝอยที่ท่อขดส่วนต้นจนหมด 100% (ไม่พบในน้ำปัสสาวะ)?',
+                            options: [
+                                'เซลล์เม็ดเลือดแดง และ อัลบูมิน',
+                                'กลูโคส และ กรดแอมิโน',
+                                'ยูเรีย และ น้ำ',
+                                'โซเดียมไอออน และ คลอไรด์ไอออน'
+                            ],
+                            correct: 1,
+                            explanation: 'ถูกต้อง! กลูโคสและกรดแอมิโนเป็นสารโมเลกุลเล็กที่ผ่านการกรองที่โกลเมอรูลัสได้ แต่ร่างกายจะดูดกลับที่ท่อขดส่วนต้น (Proximal tubule) ทั้งหมด 100% จึงไม่พบในปัสสาวะของคนปกติ'
+                        }
+                    }
+                ]
+            }
+        ];
+
+        // --- 10 STANDARD IPST QUIZ ARENA QUESTIONS (WITH CHAPTER THEME TAGS) ---
+        const bossQuizQuestions = [
+            {
+                chId: 'ch13',
+                tag: 'ข้อที่ 1 • โจทย์สืบสวนท้ายบทที่ 13 ระบบย่อยอาหาร (หน้า 40)',
+                q: 'คดีฆาตกรรมนาย ก.: ภรรยาแจ้งว่านาย ก. กินก๋วยเตี๋ยวเส้นใหญ่เสร็จเวลา 12.00 น. ต่อมาพบศพในห้องเย็น เมื่อผ่าศพพบว่าอาหารส่วนใหญ่อยู่ในกระเพาะอาหารประมาณครึ่งกระเพาะ นักสืบสันนิษฐานว่านาย ก. เสียชีวิตเวลา 24.00 น. (12 ชั่วโมงหลังกินข้าว) ข้อใดวิเคราะห์ได้ถูกต้องตามหลักชีววิทยา?',
+                options: [
+                    'เห็นด้วยกับนักสืบ เพราะก๋วยเตี๋ยวเส้นใหญ่ต้องใช้เวลาย่อยในกระเพาะอาหารนาน 12 ชั่วโมง',
+                    'ไม่เห็นด้วย เพราะปกติอาหารอยู่ในกระเพาะอาหารรวมประมาณ 1-4 ชั่วโมงเท่านั้น นาย ก. น่าจะเสียชีวิตหลังจากกินอาหารไปไม่เกิน 1-3 ชั่วโมง (ช่วงบ่าย) ไม่ใช่เที่ยงคืน',
+                    'เห็นด้วย เพราะอุณหภูมิห้องเย็นทำให้อาหารไหลย้อนกลับจากลำไส้ใหญ่มาที่กระเพาะอาหารตอนเที่ยงคืน',
+                    'ไม่เห็นด้วย เพราะกระเพาะอาหารไม่ย่อยโปรตีนในชิ้นเนื้อ'
+                ],
+                correct: 1,
+                explanation: 'ตามข้อมูลหน้า 40 หนังสือ สสวท.: อาหารอยู่ในปาก 1 นาที, กระเพาะส่วนบน 30-60 นาที, กระเพาะส่วนล่าง 1-3 ชั่วโมง ดังนั้นการพบอาหารค้างในกระเพาะครึ่งหนึ่งแสดงว่าเสียชีวิตหลังมื้อเที่ยงเพียง 1-3 ชั่วโมงเท่านั้น'
+            },
+            {
+                chId: 'ch13',
+                tag: 'ข้อที่ 2 • โจทย์การทดลองท้ายบทที่ 13 ระบบย่อยอาหาร (หน้า 41)',
+                q: 'จากการเลี้ยงแบคทีเรีย A และ B บนอาหารเลี้ยงเชื้อที่มีแป้ง (starch agar) เป็นเวลา 5 วัน แล้วเทสารละลายไอโอดีนลงไป พบว่า "รอบๆ โคโลนีของแบคทีเรีย A มีวงใสเกิดขึ้น" ในขณะที่รอบๆ แบคทีเรีย B เป็นสีน้ำเงินเข้ม ข้อใดสรุปได้ถูกต้อง?',
+                options: [
+                    'แบคทีเรีย A สร้างเอนไซม์อะไมเลสออกมาย่อยแป้งนอกเซลล์ได้ ทำให้แป้งรอบโคโลนีถูกย่อยจึงไม่เปลี่ยนสีไอโอดีน',
+                    'แบคทีเรีย B สร้างเอนไซม์อะไมเลสได้ดีกว่า จึงเกิดสีน้ำเงินเข้มกับไอโอดีน',
+                    'แบคทีเรีย A ปล่อยกรดไฮโดรคลอริกมาย่อยโปรตีนในวุ้น',
+                    'ทั้งแบคทีเรีย A และ B ย่อยอาหารภายในฟูดแวคิวโอลเท่านั้น'
+                ],
+                correct: 0,
+                explanation: 'แป้งทำปฏิกิริยากับไอโอดีนได้สีน้ำเงินเข้ม การเกิดวงใสรอบโคโลนี A แสดงว่าแบคทีเรีย A สร้างเอนไซม์อะไมเลสออกมาย่อยแป้งรอบๆ จนหมดไป'
+            },
+            {
+                chId: 'ch13',
+                tag: 'ข้อที่ 3 • บทที่ 13 การทำงานของเอนไซม์และน้ำดี',
+                q: 'ผู้ป่วยที่ท่อน้ำดีอุดตัน จะส่งผลกระทบต่อการย่อยอาหารประเภทใดมากที่สุด เพราะเหตุใด?',
+                options: [
+                    'คาร์โบไฮเดรต เพราะน้ำดีมีเอนไซม์อะไมเลส',
+                    'โปรตีน เพราะน้ำดีทำหน้าที่เปลี่ยนเพปซิโนเจนเป็นเพปซิน',
+                    'ลิพิด (ไขมัน) เพราะขาดเกลือน้ำดีที่จะช่วยให้ลิพิดแตกตัวเป็นอิมัลชัน ทำให้เอนไซม์ลิเพสย่อยลิพิดได้น้อยลงมาก',
+                    'กรดนิวคลิอิก เพราะน้ำดีใช้ย่อย DNA และ RNA'
+                ],
+                correct: 2,
+                explanation: 'แม้ตับอ่อนและลำไส้เล็กจะยังสร้างเอนไซม์ลิเพสได้ แต่หากท่อน้ำดีอุดตัน จะไม่มีเกลือน้ำดีมาตีไขมันให้แตกตัวเป็นหยดเล็กๆ (อิมัลชัน) ทำให้ลิเพสย่อยไขมันได้น้อยลงอย่างมาก'
+            },
+            {
+                chId: 'ch13',
+                tag: 'ข้อที่ 4 • บทที่ 13 การดูดซึมและลำเลียงสารอาหาร',
+                q: 'เมื่อรับประทานอาหารที่มี "วิตามินเอ" และ "กลูโคส" หลังจากถูกดูดซึมที่วิลลัสของลำไส้เล็กแล้ว สารทั้งสองจะถูกลำเลียงแยกทางกันอย่างไร?',
+                options: [
+                    'วิตามินเอเข้าหลอดน้ำเหลืองฝอยไปพร้อมไคโลไมครอน ส่วนกลูโคสเข้าหลอดเลือดฝอยแล้วผ่านเฮพาทิกพอทัลเวนไปยังตับ',
+                    'วิตามินเอเข้าหลอดเลือดฝอยไปที่ตับ ส่วนกลูโคสเข้าหลอดน้ำเหลืองฝอย',
+                    'ทั้งวิตามินเอและกลูโคสเข้าสู่หลอดเลือดฝอยและไม่ผ่านตับ',
+                    'สารทั้งสองถูกส่งต่อไปดูดซึมที่ลำไส้ใหญ่ส่วนซีกัมเท่านั้น'
+                ],
+                correct: 0,
+                explanation: 'วิตามินเอเป็นวิตามินที่ละลายในลิพิด (A, D, E, K) จึงเข้าสู่หลอดน้ำเหลืองฝอย ส่วนกลูโคสละลายน้ำจึงเข้าสู่หลอดเลือดฝอยในวิลลัสแล้วลำเลียงผ่านเฮพาทิกพอทัลเวนเข้าสู่ตับ'
+            },
+            {
+                chId: 'ch14',
+                tag: 'ข้อที่ 5 • บทที่ 14 ระบบหายใจ (โครงสร้างแลกเปลี่ยนแก๊ส)',
+                q: 'ข้อใดกล่าวถึงโครงสร้างและกระบวนการแลกเปลี่ยนแก๊สของสัตว์ได้ถูกต้องทั้งหมด?',
+                options: [
+                    'แมลงใช้ระบบท่อลมฝอยส่งแก๊สเข้าสู่เซลล์โดยตรงโดยไม่ผ่านระบบหมุนเวียนเลือด และนกมีอากาศไหลผ่านปอดในทิศทางเดียวโดยอาศัยถุงลม',
+                    'ไส้เดือนดินแลกเปลี่ยนแก๊สผ่านท่อมัลพิเกียน และกบตัวเต็มวัยใช้เหงือกเท่านั้น',
+                    'ถุงลม (air sac) ของนกมีหลอดเลือดฝอยหุ้มหนาแน่นเพื่อทำหน้าที่แลกเปลี่ยนแก๊สแทนปอด',
+                    'ปลามีการไหลของเลือดในซี่เหงือกไปในทิศทางเดียวกับการไหลของน้ำ'
+                ],
+                correct: 0,
+                explanation: 'แมลงใช้ระบบท่อลมซึ่งท่อลมฝอยแทรกถึงเซลล์โดยตรง ส่วนนกใช้ถุงลมช่วยสำรองและดันอากาศให้ไหลผ่านแขนงหลอดลมในปอด (parabronchi) ในทิศทางเดียว'
+            },
+            {
+                chId: 'ch14',
+                tag: 'ข้อที่ 6 • บทที่ 14 ความดันย่อยและการลำเลียงแก๊ส',
+                q: 'ข้อใดระบุค่าความดันย่อยของแก๊สออกซิเจน ($P_{O_2}$) และทิศทางการแพร่ของแก๊สบริเวณถุงลมปอดของมนุษย์ได้ถูกต้อง?',
+                options: [
+                    'PO2 ในถุงลม (40 mmHg) ต่ำกว่าในหลอดเลือดฝอยที่เข้าปอด (104 mmHg) ทำให้ O2 แพร่ออกจากเลือดสู่ถุงลม',
+                    'PO2 ในถุงลม (104 mmHg) สูงกว่าในหลอดเลือดฝอยที่เข้าปอด (40 mmHg) ทำให้ O2 แพร่จากถุงลมเข้าสู่หลอดเลือดฝอยจับกับฮีโมโกลบิน',
+                    'PO2 ในถุงลมและในเนื้อเยื่อมีค่าเท่ากันคือ 160 mmHg จึงเกิดแอกทีฟทรานสปอร์ตของแก๊ส',
+                    'CO2 แพร่จากถุงลม (40 mmHg) เข้าสู่หลอดเลือดฝอยที่เข้าปอด (45 mmHg)'
+                ],
+                correct: 1,
+                explanation: 'ภายในถุงลมมี PO2 = 104 mmHg ส่วนเลือดในหลอดเลือดฝอยที่มาจากหัวใจเข้าสู่ปอดมี PO2 = 40 mmHg ดังนั้น O2 จึงแพร่จากถุงลมเข้าสู่หลอดเลือดฝอย'
+            },
+            {
+                chId: 'ch14',
+                tag: 'ข้อที่ 7 • โจทย์ท้ายบทที่ 14 (หน้า 84) Hyperventilation',
+                q: 'ผู้ป่วยภาวะ Hyperventilation syndrome หายใจเร็วและลึกจนมีปริมาณ $CO_2$ ในเลือดลดลงมาก เลือดจึงมีความเป็นเบสสูงขึ้น ทำให้มือเท้าเย็นและนิ้วมือจีบเกร็ง เหตุใดการปฐมพยาบาลโดยให้หายใจช้าลงหรือใช้ถุงกระดาษครอบปากและจมูกจึงช่วยบรรเทาอาการได้?',
+                options: [
+                    'เพื่อให้ผู้ป่วยได้รับ CO2 ที่หายใจออกกลับเข้าไป เพิ่มความเข้มข้นของ CO2 และ H+ ในเลือดให้ค่า pH กลับสู่สมดุลปกติ',
+                    'เพื่อป้องกันไม่ให้แก๊สออกซิเจนจับกับหมู่ฮีมของฮีโมโกลบิน',
+                    'เพื่อบังคับให้กล้ามเนื้อหน้าท้องคลายตัวตลอดเวลา',
+                    'เพื่อเพิ่มค่า pH ของเลือดให้สูงขึ้นไปอีก'
+                ],
+                correct: 0,
+                explanation: 'การครอบถุงกระดาษหรือปรับให้หายใจช้าลงช่วยให้ผู้ป่วยสูดอากาศที่มี CO2 กลับเข้าไป ทำให้เกิดกรดคาร์บอนิกในเลือดเพิ่มขึ้น ปรับลดความเป็นเบสของเลือดให้กลับสู่ดุลยภาพปกติ'
+            },
+            {
+                chId: 'ch15',
+                tag: 'ข้อที่ 8 • บทที่ 15 ระบบหมุนเวียนเลือดและหมู่เลือด',
+                q: 'ชายคนหนึ่งมีเลือด "หมู่ A, Rh-" หากประสบอุบัติเหตุเสียเลือดมากและเคยได้รับเลือด Rh+ มาก่อนแล้วครั้งหนึ่ง ในครั้งนี้เขาควรได้รับเซลล์เม็ดเลือดแดงจากผู้บริจาคหมู่เลือดใดจึงจะปลอดภัยที่สุด?',
+                options: [
+                    'หมู่ B, Rh- หรือ หมู่ AB, Rh+',
+                    'หมู่ A, Rh- หรือ หมู่ O, Rh-',
+                    'หมู่ A, Rh+ หรือ หมู่ AB, Rh-',
+                    'หมู่ O, Rh+ เท่านั้น'
+                ],
+                correct: 1,
+                explanation: 'ผู้รับมีหมู่ A จึงมีแอนติบอดี B ในพลาสมา (รับได้จากหมู่ A หรือ O) และเนื่องจากเป็น Rh- ที่เคยได้รับ Rh+ มาก่อน ร่างกายจึงสร้างแอนติบอดีต่อ Rh+ ไว้แล้ว ครั้งนี้จึงต้องรับเลือดที่เป็น Rh- เท่านั้น (คือ A, Rh- หรือ O, Rh-)'
+            },
+            {
+                chId: 'ch16',
+                tag: 'ข้อที่ 9 • บทที่ 16 ระบบภูมิคุ้มกัน',
+                q: 'ข้อใดกล่าวถูกต้องเกี่ยวกับการทำงานของระบบภูมิคุ้มกันในร่างกายมนุษย์?',
+                options: [
+                    'การฉีดวัคซีนเป็นการให้แอนติบอดีโดยตรงเพื่อให้ร่างกายมีภูมิคุ้มกันทันทีใน 1 ชั่วโมง',
+                    'เชื้อไวรัส HIV เข้าทำลายเซลล์เม็ดเลือดขาวชนิดเซลล์ทีผู้ช่วย (Helper T-cell / CD4) ส่งผลให้ภูมิคุ้มกันบกพร่อง',
+                    'กรดไฮโดรคลอริกในกระเพาะอาหารจัดเป็นกลไกการต่อต้านสิ่งแปลกปลอมแบบจำเพาะ',
+                    'เซลล์เม็ดเลือดแดงทำหน้าที่สร้างแอนติบอดีเมื่อเกิดอาการภูมิแพ้'
+                ],
+                correct: 1,
+                explanation: 'เชื้อ HIV ทำลายเซลล์ทีผู้ช่วย (Helper T-cell / CD4) ซึ่งเป็นตัวกระตุ้นการทำงานของทั้ง B-cell และ Cytotoxic T-cell ทำให้ระบบภูมิคุ้มกันแบบจำเพาะบกพร่องอย่างรุนแรง'
+            },
+            {
+                chId: 'ch17',
+                tag: 'ข้อที่ 10 • บทที่ 17 ระบบขับถ่ายและดุลยภาพของน้ำ',
+                q: 'หากดื่มน้ำในปริมาณมากเกินไปในระยะเวลาสั้นๆ ร่างกายจะมีกลไกปรับสมดุลของน้ำและปัสสาวะอย่างไร?',
+                options: [
+                    'แรงดันออสโมติกของเลือดลดลง -> ต่อมใต้สมองส่วนหลังหลั่งฮอร์โมน ADH ลดลง -> ท่อหน่วยไตและท่อรวมดูดกลับน้ำน้อยลง -> ปัสสาวะมีปริมาณมากและเจือจาง',
+                    'แรงดันออสโมติกของเลือดสูงขึ้น -> ต่อมใต้สมองส่วนหลังหลั่ง ADH เพิ่มขึ้น -> ปัสสาวะมีปริมาณน้อยและเข้มข้น',
+                    'โกลเมอรูลัสหยุดกรองน้ำและปล่อยโปรตีนออกมากับปัสสาวะ',
+                    'ท่อขดส่วนต้นหยุดดูดกลับกลูโคสและกรดแอมิโน'
+                ],
+                correct: 0,
+                explanation: 'เมื่อดื่มน้ำมาก เลือดจะเจือจาง (แรงดันออสโมติกต่ำ) ไฮโพทาลามัสจึงยับยั้งต่อมใต้สมองส่วนหลังให้หลั่งฮอร์โมน ADH ลดลง ทำให้ท่อรวมดูดน้ำกลับเข้าเลือดน้อยลง ร่างกายจึงขับปัสสาวะออกมามากและเจือจาง'
+            }
+        ];
+
+        // --- APPLY DYNAMIC CHAPTER THEME TO THE ENTIRE PAGE ---
+        function applyDynamicChapterTheme(chapterId) {
+            const theme = chapterThemes[chapterId] || chapterThemes.ch13;
+            const root = document.documentElement;
+            root.style.setProperty('--theme-bg-from', theme.bgFrom);
+            root.style.setProperty('--theme-bg-via', theme.bgVia);
+            root.style.setProperty('--theme-bg-to', theme.bgTo);
+
+            const chObj = chaptersData.find(c => c.id === chapterId) || chaptersData[0];
+
+            // Header Avatar & Active System Pill
+            const avatar = document.getElementById('headerAvatar');
+            avatar.className = `w-11 h-11 rounded-2xl bg-gradient-to-br ${theme.bannerGradient} text-white flex items-center justify-center text-xl shadow-md transition-all duration-300`;
+
+            const pill = document.getElementById('activeSystemPill');
+            pill.className = `hidden sm:inline-flex items-center gap-1.5 text-xs font-bold px-3 py-0.5 rounded-full border ${theme.badgeBg}`;
+            pill.innerHTML = `<i class="fa-solid ${chObj.icon}"></i> ${theme.name}`;
+
+            // Update Top 5-Chapter Theme Ribbon
+            const selectorContainer = document.getElementById('topThemeSelector');
+            if (selectorContainer) {
+                selectorContainer.innerHTML = chaptersData.map((ch, idx) => {
+                    const isSelected = ch.id === chapterId;
+                    const t = chapterThemes[ch.id];
+                    const doneCount = ch.scenes.filter((_, sIdx) => playerState.completedScenes[`${idx}-${sIdx}`]).length;
+                    return `
+                        <button onclick="selectChapter(${idx}, 0)" class="p-2.5 rounded-xl border text-left transition-all flex items-center gap-2.5 ${isSelected ? `bg-gradient-to-r ${t.bannerGradient} text-white border-transparent shadow-md scale-[1.01]` : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'}">
+                            <div class="w-8 h-8 rounded-lg ${isSelected ? 'bg-white/25 text-white' : `bg-${ch.color}-100 text-${ch.color}-600`} flex items-center justify-center text-sm shrink-0">
+                                <i class="fa-solid ${ch.icon}"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="text-[10px] font-bold uppercase ${isSelected ? 'text-white/90' : `text-${ch.color}-700`}">${ch.number}</span>
+                                    <span class="text-[10px] px-1.5 py-0.2 rounded-full font-bold ${isSelected ? 'bg-white/25 text-white' : 'bg-slate-100 text-slate-600'}">${doneCount}/${ch.scenes.length}</span>
+                                </div>
+                                <div class="text-xs font-bold truncate">${ch.title}</div>
+                            </div>
+                        </button>
+                    `;
+                }).join('');
+            }
+
+            // Update Main Story Card Banner & Colors
+            const storyCard = document.getElementById('mainStoryCard');
+            if (storyCard) {
+                storyCard.className = `storybook-card rounded-3xl border-2 ${theme.cardBorder} overflow-hidden shadow-lg transition-all duration-300`;
+            }
+
+            const banner = document.getElementById('chapterThemeBanner');
+            if (banner) {
+                banner.className = `px-6 py-4 bg-gradient-to-r ${theme.bannerGradient} text-white relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-3`;
+                banner.innerHTML = `
+                    <div class="space-y-1 relative z-10">
+                        <div class="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full backdrop-blur-sm">
+                            <i class="fa-solid ${chObj.icon}"></i> ${chObj.number} • ${theme.name}
+                        </div>
+                        <div class="text-sm sm:text-base font-bold text-white drop-shadow-sm">${theme.subtitle}</div>
+                        <div class="flex items-center gap-2 pt-0.5 text-white/90 text-xs">
+                            ${theme.decorIcons.map(ic => `<span class="w-6 h-6 rounded-lg bg-white/20 inline-flex items-center justify-center"><i class="fa-solid ${ic}"></i></span>`).join('')}
+                            <span class="text-[11px] font-medium ml-1">บรรยากาศและโทนสีปรับตามหัวข้ออัตโนมัติ</span>
+                        </div>
+                    </div>
+                    <div class="shrink-0 self-end sm:self-center">
+                        ${theme.bannerSvg}
+                    </div>
+                `;
+            }
+
+            const visualStage = document.getElementById('sceneVisualContainer');
+            if (visualStage) {
+                visualStage.className = `w-full bg-gradient-to-b ${theme.visualStageBg} p-5 border-b border-slate-200 flex flex-col items-center justify-center min-h-[210px] relative overflow-hidden transition-colors duration-300`;
+            }
+
+            const aiBox = document.getElementById('aiDialogBox');
+            const aiIcon = document.getElementById('aiDialogIcon');
+            const aiTitle = document.getElementById('aiDialogTitle');
+            if (aiBox && aiIcon && aiTitle) {
+                aiBox.className = `flex items-start gap-4 ${theme.aiBoxBg} border rounded-2xl p-4 transition-colors duration-300`;
+                aiIcon.className = `w-11 h-11 rounded-2xl ${theme.aiIconBg} flex items-center justify-center text-xl shrink-0 mt-0.5 shadow-sm`;
+                aiTitle.className = `text-xs font-bold ${theme.aiTitleText} uppercase tracking-wide`;
+            }
+        }
+
+        // --- TOAST NOTIFICATION HELPER (LIGHT THEME) ---
+        function showToast(title, subtitle, iconClass = 'fa-bolt', color = 'emerald') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `bg-white border-2 border-${color}-400 px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 transform transition-all duration-300 translate-y-2 opacity-0`;
+            toast.innerHTML = `
+                <div class="w-9 h-9 rounded-xl bg-${color}-100 text-${color}-600 flex items-center justify-center text-base shrink-0">
+                    <i class="fa-solid ${iconClass}"></i>
+                </div>
+                <div>
+                    <div class="text-xs font-bold text-slate-800">${title}</div>
+                    <div class="text-[11px] text-${color}-700 font-reading font-semibold">${subtitle}</div>
+                </div>
+            `;
+            container.appendChild(toast);
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        // --- REAL-TIME PROGRESS & XP CALCULATION ---
+        function getRankTitle(xp) {
+            if (xp >= 900) return 'ผู้บัญชาการชีววิทยาสูงสุด';
+            if (xp >= 600) return 'กัปตันนาโนอาวุโส';
+            if (xp >= 300) return 'นักสำรวจระบบร่างกาย';
+            if (xp >= 100) return 'นักบินปฏิบัติการ';
+            return 'นักบินฝึกหัด';
+        }
+
+        function updateGlobalDashboard() {
+            const totalScenes = 14;
+            const completedScenesCount = Object.keys(playerState.completedScenes).length;
+
+            const totalLabs = 2;
+            const completedLabsCount = (playerState.labProgress.lab1Completed ? 1 : 0) + (playerState.labProgress.lab2Completed ? 1 : 0);
+
+            const totalQuiz = bossQuizQuestions.length;
+            const submittedQuizCount = Object.keys(playerState.quizSubmitted).length;
+
+            // Total actionable milestones = 14 scenes + 2 labs + 10 quiz questions = 26 milestones
+            const totalMilestones = totalScenes + totalLabs + totalQuiz;
+            const completedMilestones = completedScenesCount + completedLabsCount + submittedQuizCount;
+
+            const pct = Math.round((completedMilestones / totalMilestones) * 100);
+
+            document.getElementById('globalProgressBar').style.width = `${pct}%`;
+            document.getElementById('globalProgressText').textContent = `${pct}%`;
+            document.getElementById('progressBreakdownText').textContent = `(ฉากเนื้อเรื่อง ${completedScenesCount}/${totalScenes} • แล็บ ${completedLabsCount}/${totalLabs} • ข้อสอบ ${submittedQuizCount}/${totalQuiz})`;
+
+            document.getElementById('navStoryCount').textContent = `${completedScenesCount}/${totalScenes}`;
+            document.getElementById('navLabCount').textContent = `${completedLabsCount}/${totalLabs}`;
+            document.getElementById('navQuizCount').textContent = `${submittedQuizCount}/${totalQuiz}`;
+
+            document.getElementById('xpDisplay').textContent = `${playerState.xp} XP`;
+            document.getElementById('rankDisplay').textContent = `ยศ: ${getRankTitle(playerState.xp)}`;
+            document.getElementById('captainDisplayBadge').innerHTML = `<i class="fa-solid fa-user-astronaut mr-1"></i>กัปตัน: ${playerState.captainName}`;
+            document.getElementById('shipNameBadge').textContent = `• ยาน: ${playerState.shipName}`;
+
+            // Unlock Chapter Badges ONLY if all scenes in that chapter are completed
+            chaptersData.forEach((ch, cIdx) => {
+                const allChapterScenesDone = ch.scenes.every((_, sIdx) => playerState.completedScenes[`${cIdx}-${sIdx}`] === true);
+                if (allChapterScenesDone && !playerState.badges[ch.id].unlocked) {
+                    playerState.badges[ch.id].unlocked = true;
+                    showToast(`ปลดล็อกเหรียญตรา ${ch.number}!`, playerState.badges[ch.id].name, 'fa-medal', 'amber');
+                }
+            });
+
+            const unlockedBadgeCount = Object.values(playerState.badges).filter(b => b.unlocked).length;
+            const badgeCountEl = document.getElementById('badgeCount');
+            badgeCountEl.textContent = `${unlockedBadgeCount}/5`;
+            badgeCountEl.className = unlockedBadgeCount > 0
+                ? 'px-1.5 py-0.2 text-xs font-bold rounded-full bg-emerald-500 text-white'
+                : 'px-1.5 py-0.2 text-xs font-bold rounded-full bg-slate-200 text-slate-700';
+
+            saveStateToStorage();
+        }
+
+        function addXP(amount, reasonText) {
+            playerState.xp += amount;
+            showToast(`+${amount} XP พลังงานความรู้!`, reasonText, 'fa-bolt', 'emerald');
+            updateGlobalDashboard();
+        }
+
+        // --- CAPTAIN & SHIP CUSTOMIZATION ---
+        function saveCaptainName() {
+            const val = document.getElementById('captainNameInput').value.trim() || 'นักสำรวจฝึกหัด';
+            playerState.captainName = val;
+            updateGlobalDashboard();
+            showToast('บันทึกชื่อกัปตันสำเร็จ', `ยินดีต้อนรับกัปตัน ${val}`, 'fa-user-check', 'sky');
+        }
+
+        function selectShip(name, iconClass, btnEl) {
+            playerState.shipName = name;
+            playerState.shipIcon = iconClass;
+            document.getElementById('headerAvatar').innerHTML = `<i class="fa-solid ${iconClass}"></i>`;
+            document.querySelectorAll('.ship-btn').forEach(b => {
+                b.classList.remove('border-2', 'border-amber-500');
+                b.classList.add('border', 'border-slate-200');
+            });
+            if (btnEl) {
+                btnEl.classList.remove('border', 'border-slate-200');
+                btnEl.classList.add('border-2', 'border-amber-500');
+            }
+            updateGlobalDashboard();
+            showToast('เปลี่ยนยานสำรวจแล้ว', `พร้อมเดินทางด้วยยาน ${name}`, iconClass, 'amber');
+        }
+
+        function toggleIntroBanner() {
+            document.getElementById('introBanner').classList.toggle('hidden');
+        }
+
+        // --- LIGHT-THEMED SVG SCENE GENERATOR ---
+        function getSceneVisualSVG(svgType) {
+            switch(svgType) {
+                case 'animal_digestion':
+                    return `
+                        <div class="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+                            <div class="bg-white border-2 border-purple-200 rounded-2xl p-3 text-center shadow-sm">
+                                <svg viewBox="0 0 120 80" class="w-24 h-16 mx-auto animate-float">
+                                    <path d="M25,40 Q20,15 45,18 Q70,8 85,25 Q105,35 95,60 Q75,75 50,68 Q20,68 25,40 Z" fill="#F3E8FF" stroke="#9333EA" stroke-width="2.5"/>
+                                    <circle cx="52" cy="40" r="8" fill="#7E22CE"/>
+                                    <circle cx="72" cy="46" r="6" fill="#10B981" stroke="#059669" stroke-width="1.5"/>
+                                </svg>
+                                <div class="text-xs font-bold text-purple-900 mt-1">อะมีบา พารามีเซียม ฟองน้ำ</div>
+                                <div class="text-[11px] text-slate-600">ย่อยภายในเซลล์ (Food Vacuole)</div>
+                            </div>
+                            <div class="bg-white border-2 border-emerald-200 rounded-2xl p-3 text-center shadow-sm">
+                                <svg viewBox="0 0 120 80" class="w-24 h-16 mx-auto animate-float" style="animation-delay: 0.5s">
+                                    <path d="M50,72 L50,30 Q40,12 25,8 M50,30 Q60,10 58,4 M70,72 L70,30 Q80,12 95,8" fill="none" stroke="#059669" stroke-width="3.5" stroke-linecap="round"/>
+                                    <path d="M50,30 L50,72 L70,72 L70,30" fill="#D1FAE5" stroke="#059669" stroke-width="2.5"/>
+                                    <circle cx="60" cy="50" r="5" fill="#D97706"/>
+                                </svg>
+                                <div class="text-xs font-bold text-emerald-900 mt-1">ไฮดรา & พลานาเรีย</div>
+                                <div class="text-[11px] text-slate-600">ทางเดินอาหารไม่สมบูรณ์ (ปากทางเดียว)</div>
+                            </div>
+                            <div class="bg-white border-2 border-amber-200 rounded-2xl p-3 text-center shadow-sm">
+                                <svg viewBox="0 0 120 80" class="w-24 h-16 mx-auto animate-float" style="animation-delay: 1s">
+                                    <path d="M15,40 Q35,20 55,40 T95,40" fill="none" stroke="#EA580C" stroke-width="7" stroke-linecap="round"/>
+                                    <circle cx="15" cy="40" r="4" fill="#0284C7"/>
+                                    <circle cx="95" cy="40" r="4" fill="#16A34A"/>
+                                </svg>
+                                <div class="text-xs font-bold text-amber-900 mt-1">ไส้เดือน แมลง สัตว์มีกระดูกสันหลัง</div>
+                                <div class="text-[11px] text-slate-600">ทางเดินอาหารสมบูรณ์ (ปาก → ทวารหนัก)</div>
+                            </div>
+                        </div>
+                    `;
+                case 'stomach_acid':
+                    return `
+                        <div class="w-full max-w-2xl flex flex-col sm:flex-row items-center justify-around gap-6">
+                            <svg viewBox="0 0 200 130" class="w-44 h-32 animate-float">
+                                <path d="M75,10 L75,30 C45,40 35,80 55,105 C75,125 135,120 150,90 C160,70 140,50 125,60 C110,70 95,50 95,30 L95,10" fill="#FFE4E6" stroke="#E11D48" stroke-width="4"/>
+                                <path d="M48,80 Q95,88 148,80 C142,110 80,120 55,103 Z" fill="#FDE68A"/>
+                                <text x="62" y="98" fill="#92400E" font-size="11" font-weight="bold">HCl + Pepsin</text>
+                            </svg>
+                            <div class="bg-white p-4 rounded-2xl border-2 border-amber-200 text-xs space-y-1.5 shadow-sm">
+                                <div class="font-bold text-rose-800 text-sm"><i class="fa-solid fa-flask mr-1"></i> ปฏิกิริยาในกระเพาะอาหาร (pH ~ 2)</div>
+                                <div class="text-amber-800 font-medium">1) เพปซิโนเจน + กรด HCl → <b>เพปซิน (Pepsin)</b></div>
+                                <div class="text-emerald-800 font-medium">2) โปรตีน + น้ำ —(เพปซิน)→ <b>พอลิเพปไทด์สายสั้นลง</b></div>
+                            </div>
+                        </div>
+                    `;
+                case 'duodenum_factory':
+                    return `
+                        <div class="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                            <div class="p-3.5 rounded-2xl bg-white border-2 border-lime-300 text-center shadow-sm">
+                                <div class="text-base font-bold text-lime-700 mb-1"><i class="fa-solid fa-droplet"></i> ตับ & ถุงน้ำดี</div>
+                                <div class="font-bold text-slate-800">ส่งน้ำดี (Bile Salt)</div>
+                                <div class="text-slate-600 mt-1">ทำให้ลิพิดแตกตัวเป็นหยดเล็กๆ (อิมัลชัน)</div>
+                            </div>
+                            <div class="p-3.5 rounded-2xl bg-white border-2 border-amber-300 text-center shadow-sm">
+                                <div class="text-base font-bold text-amber-700 mb-1"><i class="fa-solid fa-fire-burner"></i> ตับอ่อน (Pancreas)</div>
+                                <div class="font-bold text-slate-800">ส่ง $NaHCO_3$ & เอนไซม์</div>
+                                <div class="text-slate-600 mt-1">อะไมเลส, ลิเพส, ทริปซิโนเจน, ไคโมทริปซิโนเจน</div>
+                            </div>
+                            <div class="p-3.5 rounded-2xl bg-white border-2 border-orange-300 text-center shadow-sm">
+                                <div class="text-base font-bold text-orange-700 mb-1"><i class="fa-solid fa-wand-magic-sparkles"></i> ผนังดูโอดินัม</div>
+                                <div class="font-bold text-slate-800">ส่งเอนเทอโรไคเนส</div>
+                                <div class="text-slate-600 mt-1">เปลี่ยนทริปซิโนเจน → ทริปซิน และย่อยจนได้โมเลกุลเดี่ยว</div>
+                            </div>
+                        </div>
+                    `;
+                case 'villus_absorption':
+                    return `
+                        <div class="w-full max-w-2xl flex flex-col sm:flex-row items-center justify-around gap-6">
+                            <svg viewBox="0 0 180 130" class="w-40 h-32 bg-white rounded-2xl p-2 border border-amber-200 shadow-sm">
+                                <path d="M30,120 L30,50 C30,15 90,15 90,50 L90,120" fill="#FFEDD5" stroke="#EA580C" stroke-width="4"/>
+                                <path d="M95,120 L95,50 C95,15 155,15 155,50 L155,120" fill="#FFEDD5" stroke="#EA580C" stroke-width="4"/>
+                                <path d="M50,115 L50,50 C50,32 70,32 70,50 L70,115" fill="none" stroke="#E11D48" stroke-width="3"/>
+                                <path d="M60,115 L60,45" fill="none" stroke="#EAB308" stroke-width="4.5" stroke-linecap="round"/>
+                            </svg>
+                            <div class="text-xs space-y-2 max-w-sm bg-white p-4 rounded-2xl border border-amber-200 shadow-sm text-slate-700">
+                                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded-full bg-rose-600 inline-block shrink-0"></span> <span><b>หลอดเลือดฝอย:</b> รับกลูโคส กรดแอมิโน วิตามิน B, C ส่งไปตับผ่าน <i>Hepatic portal vein</i></span></div>
+                                <div class="flex items-center gap-2"><span class="w-3.5 h-3.5 rounded-full bg-amber-400 inline-block shrink-0"></span> <span><b>หลอดน้ำเหลืองฝอย:</b> รับไคโลไมครอน (กรดไขมัน+กลีเซอรอล) และวิตามิน A, D, E, K</span></div>
+                            </div>
+                        </div>
+                    `;
+                case 'fish_bird_gas':
+                    return `
+                        <div class="w-full max-w-2xl bg-white border-2 border-sky-200 rounded-2xl p-4 space-y-2 shadow-sm">
+                            <div class="text-xs font-bold text-sky-900 text-center">การแลกเปลี่ยนแก๊สแบบสวนทางกันที่ซี่เหงือกปลา (Countercurrent Exchange >80%)</div>
+                            <div class="flex items-center justify-between bg-sky-100 px-4 py-1.5 rounded-xl border border-sky-300 text-xs text-sky-900 font-semibold">
+                                <span class="font-bold">ทิศทางน้ำไหล ➔</span>
+                                <span>100%</span><span>80%</span><span>60%</span><span>40%</span><span>15% ($O_2$ ในน้ำ)</span>
+                            </div>
+                            <div class="flex justify-around text-emerald-700 text-[11px] font-bold">
+                                <span>⬇ แพร่ลง</span><span>⬇ แพร่ลง</span><span>⬇ แพร่ลง</span><span>⬇ แพร่ลง</span><span>⬇ แพร่ลง</span>
+                            </div>
+                            <div class="flex items-center justify-between bg-rose-100 px-4 py-1.5 rounded-xl border border-rose-300 text-xs text-rose-900 font-semibold">
+                                <span class="font-bold">⬅ ทิศทางเลือดไหล</span>
+                                <span>90%</span><span>70%</span><span>50%</span><span>30%</span><span>5% ($O_2$ ในเลือด)</span>
+                            </div>
+                        </div>
+                    `;
+                case 'respiratory_tract':
+                case 'gas_transport':
+                case 'spirometer_brain':
+                    return `
+                        <div class="w-full max-w-2xl flex flex-col sm:flex-row items-center justify-around gap-4">
+                            <div class="p-4 rounded-2xl bg-white border-2 border-sky-300 text-center space-y-1 shadow-sm">
+                                <div class="text-xs text-slate-500 font-semibold">ภายในถุงลมปอด (Alveolus)</div>
+                                <div class="text-base font-bold text-sky-700">$P_{O_2} = 104\text{ mmHg}$</div>
+                                <div class="text-xs font-semibold text-rose-600">$P_{CO_2} = 40\text{ mmHg}$</div>
+                            </div>
+                            <div class="text-center text-xs font-bold space-y-1.5 bg-white px-4 py-3 rounded-2xl border border-slate-200 shadow-sm">
+                                <div class="text-emerald-700">$O_2$ แพร่เข้าเลือด ➔ ($Hb + O_2 \rightarrow HbO_2$)</div>
+                                <div class="text-amber-700">⬅ $CO_2$ แพร่ออกสู่ถุงลม ($HCO_3^- + H^+ \rightarrow H_2O + CO_2$)</div>
+                            </div>
+                            <div class="p-4 rounded-2xl bg-white border-2 border-rose-300 text-center space-y-1 shadow-sm">
+                                <div class="text-xs text-slate-500 font-semibold">เลือดฝอยที่เข้าสู่ถุงลม</div>
+                                <div class="text-base font-bold text-rose-700">$P_{O_2} = 40\text{ mmHg}$</div>
+                                <div class="text-xs font-semibold text-sky-700">$P_{CO_2} = 45\text{ mmHg}$</div>
+                            </div>
+                        </div>
+                    `;
+                case 'heart_circulation':
+                case 'blood_groups':
+                    return `
+                        <div class="w-full max-w-2xl grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="bg-white p-4 rounded-2xl border-2 border-rose-200 shadow-sm flex items-center gap-3.5">
+                                <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-2xl shrink-0 animate-pulse">
+                                    <i class="fa-solid fa-heart-pulse"></i>
+                                </div>
+                                <div class="text-xs space-y-1">
+                                    <div class="font-bold text-rose-900">หัวใจซีกขวา vs หัวใจซีกซ้าย</div>
+                                    <div class="text-slate-600">ซีกขวารับเลือด $O_2$ ต่ำส่งไปปอด • ซีกซ้ายรับเลือด $O_2$ สูงจากปอดสูบฉีดออกทางเอออร์ตา</div>
+                                </div>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl border-2 border-pink-200 shadow-sm flex items-center gap-3.5">
+                                <div class="w-12 h-12 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center text-2xl shrink-0">
+                                    <i class="fa-solid fa-droplet"></i>
+                                </div>
+                                <div class="text-xs space-y-1">
+                                    <div class="font-bold text-pink-900">กฎเหล็กการให้เลือด ABO</div>
+                                    <div class="text-slate-600">แอนติเจนบนผิวเม็ดเลือดแดงของผู้ให้ <b>ห้ามตรงกับ</b> แอนติบอดีในพลาสมาของผู้รับ</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                case 'immune_defense':
+                    return `
+                        <div class="w-full max-w-2xl grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="bg-white p-4 rounded-2xl border-2 border-purple-200 shadow-sm flex items-center gap-3.5">
+                                <div class="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center text-2xl shrink-0">
+                                    <i class="fa-solid fa-shield-virus"></i>
+                                </div>
+                                <div class="text-xs space-y-1">
+                                    <div class="font-bold text-purple-900">B-cell & พลาสมาเซลล์</div>
+                                    <div class="text-slate-600">สร้างและหลั่งแอนติบอดี (Antibody) เข้าจับแอนติเจนอย่างจำเพาะเจาะจง</div>
+                                </div>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl border-2 border-amber-200 shadow-sm flex items-center gap-3.5">
+                                <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-2xl shrink-0">
+                                    <i class="fa-solid fa-syringe"></i>
+                                </div>
+                                <div class="text-xs space-y-1">
+                                    <div class="font-bold text-amber-900">วัคซีน (ก่อเอง) vs เซรุ่ม (รับมา)</div>
+                                    <div class="text-slate-600">วัคซีนกระตุ้นเซลล์ความจำอยู่ได้นาน • เซรุ่มคือแอนติบอดีพร้อมใช้ออกฤทธิ์ทันที</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                case 'kidney_nephron':
+                default:
+                    return `
+                        <div class="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                            <div class="bg-white p-3.5 rounded-2xl border-2 border-emerald-200 text-center shadow-sm">
+                                <div class="text-emerald-600 font-bold text-sm mb-1"><i class="fa-solid fa-filter"></i> 1. การกรอง (Filtration)</div>
+                                <div class="text-slate-700">เกิดที่<b>โกลเมอรูลัส</b> เม็ดเลือดแดงและโปรตีนขนาดใหญ่ผ่านไม่ได้</div>
+                            </div>
+                            <div class="bg-white p-3.5 rounded-2xl border-2 border-teal-200 text-center shadow-sm">
+                                <div class="text-teal-600 font-bold text-sm mb-1"><i class="fa-solid fa-arrows-rotate"></i> 2. การดูดกลับ (100% กลูโคส)</div>
+                                <div class="text-slate-700">เกิดมากสุดที่<b>ท่อขดส่วนต้น</b> ดูดกลับกลูโคสและกรดแอมิโนจนหมด</div>
+                            </div>
+                            <div class="bg-white p-3.5 rounded-2xl border-2 border-cyan-200 text-center shadow-sm">
+                                <div class="text-cyan-600 font-bold text-sm mb-1"><i class="fa-solid fa-droplet"></i> 3. ฮอร์โมน ADH</div>
+                                <div class="text-slate-700">หลั่งจากต่อมใต้สมองส่วนหลัง กระตุ้น<b>ท่อรวม</b>ให้ดูดน้ำกลับเมื่อร่างกายขาดน้ำ</div>
+                            </div>
+                        </div>
+                    `;
+            }
+        }
+
+        // --- RENDER SIDEBAR & STORY SCENE ---
+        function renderSidebarChapters() {
+            const container = document.getElementById('chapterListContainer');
+            container.innerHTML = chaptersData.map((ch, cIdx) => {
+                const isCurrentCh = cIdx === playerState.currentChapterIndex;
+                const doneInCh = ch.scenes.filter((_, sIdx) => playerState.completedScenes[`${cIdx}-${sIdx}`]).length;
+                const totalInCh = ch.scenes.length;
+                const chCompleted = doneInCh === totalInCh;
+                const t = chapterThemes[ch.id];
+
+                return `
+                    <div class="rounded-2xl border-2 ${isCurrentCh ? `${t.cardBorder} bg-white shadow-sm` : 'border-slate-200 bg-slate-50/70'} overflow-hidden transition">
+                        <button onclick="selectChapter(${cIdx}, 0)" class="w-full p-3 text-left flex items-center justify-between hover:bg-white transition">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-9 h-9 rounded-xl bg-${ch.color}-100 text-${ch.color}-600 flex items-center justify-center text-sm shrink-0 font-bold">
+                                    <i class="fa-solid ${ch.icon}"></i>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-[11px] font-bold text-${ch.color}-700 uppercase">${ch.number}</span>
+                                        <span class="text-[10px] px-1.5 py-0.2 rounded-full font-semibold bg-slate-200/80 text-slate-700">${doneInCh}/${totalInCh} ฉาก</span>
+                                    </div>
+                                    <div class="text-xs font-bold text-slate-800 line-clamp-1">${ch.title}</div>
+                                </div>
+                            </div>
+                            ${chCompleted ? '<i class="fa-solid fa-circle-check text-emerald-500 text-base" title="ผ่านครบทุกฉากแล้ว"></i>' : '<i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>'}
+                        </button>
+                        ${isCurrentCh ? `
+                            <div class="px-3 pb-3 pt-1 space-y-1 border-t border-slate-100 bg-slate-50/50">
+                                ${ch.scenes.map((sc, sIdx) => {
+                                    const activeScene = sIdx === playerState.currentSceneIndex;
+                                    const isDone = playerState.completedScenes[`${cIdx}-${sIdx}`] === true;
+                                    return `
+                                        <button onclick="selectChapter(${cIdx}, ${sIdx})" class="w-full px-2.5 py-1.5 rounded-xl text-left text-xs flex items-center justify-between gap-2 transition ${activeScene ? `bg-${ch.color}-100 text-${ch.color}-900 font-bold border border-${ch.color}-300` : 'text-slate-600 hover:text-slate-900 hover:bg-white'}">
+                                            <div class="flex items-center gap-2 truncate">
+                                                <i class="fa-solid ${isDone ? 'fa-circle-check text-emerald-500' : 'fa-circle-dot text-slate-400'} text-[11px]"></i>
+                                                <span class="truncate">${sc.title}</span>
+                                            </div>
+                                            ${isDone ? '<span class="text-[10px] font-bold text-emerald-600 shrink-0">✓</span>' : ''}
+                                        </button>
+                                    `;
+                                }).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderCurrentScene() {
+            const cIdx = playerState.currentChapterIndex;
+            const sIdx = playerState.currentSceneIndex;
+            const chapter = chaptersData[cIdx];
+            const scene = chapter.scenes[sIdx];
+            const sceneKey = `${cIdx}-${sIdx}`;
+            const isCompleted = playerState.completedScenes[sceneKey] === true;
+            const attempt = playerState.checkpointAttempts[sceneKey];
+
+            // Apply Dynamic Chapter Theme
+            applyDynamicChapterTheme(chapter.id);
+
+            // Header & Status Badge
+            document.getElementById('sceneChapterBadge').textContent = `${chapter.number} • ${chapter.title}`;
+            const statusBadge = document.getElementById('sceneCompletionStatusBadge');
+            if (isCompleted) {
+                statusBadge.className = 'text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300';
+                statusBadge.innerHTML = '<i class="fa-solid fa-check mr-1"></i> ผ่านฉากนี้แล้ว (+50 XP)';
+            } else {
+                statusBadge.className = 'text-[11px] px-2.5 py-0.5 rounded-full font-semibold bg-amber-100 text-amber-800 border border-amber-300';
+                statusBadge.innerHTML = '<i class="fa-solid fa-hourglass-half mr-1"></i> รอทำแบบทดสอบประจำฉาก';
+            }
+
+            document.getElementById('sceneTitle').textContent = scene.title;
+            document.getElementById('sceneStepIndicator').textContent = `ฉาก ${sIdx + 1} / ${chapter.scenes.length}`;
+            document.getElementById('sidebarKeyTip').innerHTML = scene.keyTip;
+            document.getElementById('sceneNarrativeLead').textContent = scene.lead;
+            document.getElementById('sceneContentBody').innerHTML = scene.contentHtml;
+            document.getElementById('sceneVisualContainer').innerHTML = getSceneVisualSVG(scene.svgType);
+
+            // Render Checkpoint Options (Light Mode High Contrast)
+            document.getElementById('checkpointQuestion').textContent = scene.checkpoint.q;
+            const optionsContainer = document.getElementById('checkpointOptions');
+            const feedbackBox = document.getElementById('checkpointFeedback');
+            const confirmBtn = document.getElementById('confirmCheckpointBtn');
+            const hintEl = document.getElementById('checkpointRequirementHint');
+
+            const currentSelected = playerState.selectedCheckpointOption !== null
+                ? playerState.selectedCheckpointOption
+                : (attempt ? attempt.selected : null);
+
+            optionsContainer.innerHTML = scene.checkpoint.options.map((opt, oIdx) => {
+                let btnStyle = 'bg-white hover:bg-slate-50 border-slate-300 text-slate-700';
+                if (isCompleted && oIdx === scene.checkpoint.correct) {
+                    btnStyle = 'bg-emerald-100 border-2 border-emerald-500 text-emerald-950 font-bold shadow-sm';
+                } else if (currentSelected === oIdx) {
+                    btnStyle = 'bg-amber-50 border-2 border-amber-500 text-amber-950 font-semibold shadow-sm';
+                }
+                return `
+                    <button onclick="chooseCheckpointOption(${oIdx})" ${isCompleted ? 'disabled' : ''} class="story-choice p-3.5 rounded-xl border text-left text-xs sm:text-sm flex items-start gap-2.5 ${btnStyle}">
+                        <span class="w-6 h-6 rounded-lg bg-slate-100 border border-slate-300 text-slate-800 font-bold flex items-center justify-center shrink-0 text-xs">${['ก','ข','ค','ง'][oIdx]}</span>
+                        <span class="font-reading">${opt}</span>
+                    </button>
+                `;
+            }).join('');
+
+            if (isCompleted) {
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = `<i class="fa-solid fa-circle-check"></i> ผ่านด่านตรวจฉากนี้เรียบร้อยแล้ว`;
+                hintEl.innerHTML = `<span class="text-emerald-700 font-bold"><i class="fa-solid fa-unlock mr-1"></i>ปลดล็อกปุ่มเดินทางสู่ฉากต่อไปแล้ว!</span>`;
+                feedbackBox.className = 'p-4 rounded-xl text-sm font-reading leading-relaxed bg-emerald-100/90 border border-emerald-300 text-emerald-950';
+                feedbackBox.innerHTML = `<div class="font-bold text-emerald-800 mb-1"><i class="fa-solid fa-circle-check mr-1"></i> ตอบถูกต้อง! คุณได้รับ +50 XP จากฉากนี้แล้ว</div>${scene.checkpoint.explanation}`;
+            } else {
+                confirmBtn.disabled = (currentSelected === null);
+                confirmBtn.innerHTML = `<i class="fa-solid fa-check-double"></i> ยืนยันคำตอบเพื่อปลดล็อกความคืบหน้า`;
+                hintEl.innerHTML = `<span class="text-amber-800 font-medium"><i class="fa-solid fa-lock mr-1"></i>ต้องตอบคำถามให้ถูกต้องก่อน จึงจะปลดล็อกฉากถัดไปและนับความคืบหน้า</span>`;
+                if (attempt && !attempt.isCorrect) {
+                    feedbackBox.className = 'p-4 rounded-xl text-sm font-reading leading-relaxed bg-rose-100/90 border border-rose-300 text-rose-950';
+                    feedbackBox.innerHTML = `<div class="font-bold text-rose-800 mb-1"><i class="fa-solid fa-circle-exclamation mr-1"></i> คำตอบยังไม่ถูกต้อง ลองทบทวนเนื้อหาแล้วเลือกใหม่อีกครั้งนะกัปตัน!</div>${scene.checkpoint.explanation}`;
+                } else {
+                    feedbackBox.className = 'hidden';
+                }
+            }
+
+            const isFirst = (cIdx === 0 && sIdx === 0);
+            const isLast = (cIdx === chaptersData.length - 1 && sIdx === chapter.scenes.length - 1);
+            document.getElementById('prevSceneBtn').disabled = isFirst;
+
+            const nextBtn = document.getElementById('nextSceneBtn');
+            nextBtn.disabled = !isCompleted;
+            nextBtn.innerHTML = isLast
+                ? `<span>เข้าสู่สนามประลองข้อสอบบอส</span> <i class="fa-solid fa-trophy"></i>`
+                : `<span>${isCompleted ? 'เดินทางสู่ฉากต่อไป' : 'ล็อกอยู่ (ตอบคำถามก่อน)'}</span> <i class="fa-solid ${isCompleted ? 'fa-arrow-right' : 'fa-lock'}"></i>`;
+
+            renderSidebarChapters();
+            updateGlobalDashboard();
+        }
+
+        function chooseCheckpointOption(oIdx) {
+            const sceneKey = `${playerState.currentChapterIndex}-${playerState.currentSceneIndex}`;
+            if (playerState.completedScenes[sceneKey]) return;
+            playerState.selectedCheckpointOption = oIdx;
+            renderCurrentScene();
+        }
+
+        function submitSceneCheckpoint() {
+            const cIdx = playerState.currentChapterIndex;
+            const sIdx = playerState.currentSceneIndex;
+            const sceneKey = `${cIdx}-${sIdx}`;
+            const checkpoint = chaptersData[cIdx].scenes[sIdx].checkpoint;
+
+            if (playerState.selectedCheckpointOption === null || playerState.completedScenes[sceneKey]) return;
+
+            const chosen = playerState.selectedCheckpointOption;
+            const isCorrect = (chosen === checkpoint.correct);
+
+            playerState.checkpointAttempts[sceneKey] = { selected: chosen, isCorrect };
+
+            if (isCorrect) {
+                playerState.completedScenes[sceneKey] = true;
+                playerState.selectedCheckpointOption = null;
+                addXP(50, `ผ่านด่านตรวจ ${chaptersData[cIdx].number} ฉากที่ ${sIdx + 1}`);
+            } else {
+                showToast('คำตอบยังไม่ถูกต้อง!', 'อ่านคำใบ้แล้วเลือกคำตอบใหม่อีกครั้งเพื่อผ่านด่าน', 'fa-circle-xmark', 'rose');
+                saveStateToStorage();
+            }
+            renderCurrentScene();
+        }
+
+        function selectChapter(cIdx, sIdx) {
+            playerState.currentChapterIndex = cIdx;
+            playerState.currentSceneIndex = sIdx;
+            playerState.selectedCheckpointOption = null;
+            switchMainTab('story');
+            renderCurrentScene();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function navigateScene(direction) {
+            let cIdx = playerState.currentChapterIndex;
+            let sIdx = playerState.currentSceneIndex + direction;
+
+            if (sIdx >= chaptersData[cIdx].scenes.length) {
+                if (cIdx + 1 < chaptersData.length) {
+                    cIdx++;
+                    sIdx = 0;
+                } else {
+                    switchMainTab('quiz');
+                    return;
+                }
+            } else if (sIdx < 0) {
+                if (cIdx - 1 >= 0) {
+                    cIdx--;
+                    sIdx = chaptersData[cIdx].scenes.length - 1;
+                } else {
+                    return;
+                }
+            }
+            selectChapter(cIdx, sIdx);
+        }
+
+        // --- TAB SWITCHING ---
+        function switchMainTab(tabName) {
+            ['story', 'lab', 'quiz'].forEach(t => {
+                const view = document.getElementById(`view-${t}`);
+                const btn = document.getElementById(`tabBtn-${t}`);
+                if (t === tabName) {
+                    view.classList.remove('hidden');
+                    btn.className = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 bg-amber-500 text-white shadow-sm';
+                } else {
+                    view.classList.add('hidden');
+                    btn.className = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 text-slate-600 hover:text-slate-900';
+                }
+            });
+            if (tabName === 'lab') {
+                runEnzymeSimulation(false);
+                updateBreathingSim(false);
+                updateLabUIStatus();
+            } else if (tabName === 'quiz') {
+                renderQuizArena();
+            }
+        }
+
+        // --- INTERACTIVE LAB LOGIC (LIGHT THEME) ---
+        function updateLabUIStatus() {
+            const lp = playerState.labProgress;
+
+            document.getElementById('lab1Task1Text').innerHTML = lp.lab1EnzymeRun
+                ? `<span class="text-emerald-700 font-bold"><i class="fa-solid fa-circle-check mr-1.5"></i> 1. เดินเครื่องวิเคราะห์เอนไซม์แล้ว ✓</span>`
+                : `<i class="fa-regular fa-circle mr-1.5 text-amber-600"></i> 1. ทดลองเปลี่ยนสารอาหารและอวัยวะแล้วกดปุ่ม "เดินเครื่องวิเคราะห์เอนไซม์" อย่างน้อย 1 ครั้ง`;
+
+            document.getElementById('lab1Task2Text').innerHTML = lp.lab1BileTested
+                ? `<span class="text-emerald-700 font-bold"><i class="fa-solid fa-circle-check mr-1.5"></i> 2. ทดสอบหยดน้ำดีสังเกตอิมัลชันแล้ว ✓</span>`
+                : `<i class="fa-regular fa-circle mr-1.5 text-amber-600"></i> 2. กดปุ่ม "หยดน้ำดีลงในหลอดทดลองที่ 1" (กิจกรรม 13.3) เพื่อสังเกตอิมัลชัน`;
+
+            const lab1Count = (lp.lab1EnzymeRun ? 1 : 0) + (lp.lab1BileTested ? 1 : 0);
+            const lab1Badge = document.getElementById('lab1StatusBadge');
+            if (lp.lab1Completed) {
+                lab1Badge.className = 'text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-bold';
+                lab1Badge.textContent = 'สำเร็จภารกิจแล้ว ✓ (+100 XP)';
+            } else {
+                lab1Badge.className = 'text-[11px] px-2.5 py-0.5 rounded-full bg-white text-amber-900 font-bold';
+                lab1Badge.textContent = `กำลังดำเนินการ (${lab1Count}/2 งานย่อย)`;
+            }
+
+            document.getElementById('lab2Task1Text').innerHTML = lp.lab2InhaleTested
+                ? `<span class="text-emerald-700 font-bold"><i class="fa-solid fa-circle-check mr-1.5"></i> 1. ทดลองดึงลูกสูบจำลองการหายใจเข้าแล้ว ✓</span>`
+                : `<i class="fa-regular fa-circle mr-1.5 text-sky-600"></i> 1. เลื่อนสไลเดอร์ดึงลูกสูบลงเพื่อจำลองการหายใจเข้า (ดึงลูกสูบเกิน 60%)`;
+
+            document.getElementById('lab2Task2Text').innerHTML = lp.lab2HoleOpened
+                ? `<span class="text-emerald-700 font-bold"><i class="fa-solid fa-circle-check mr-1.5"></i> 2. ทดลองเปิดรูข้างหลอดฉีดยาแล้ว ✓</span>`
+                : `<i class="fa-regular fa-circle mr-1.5 text-sky-600"></i> 2. ทดลองเอาเครื่องหมายถูกออกเพื่อ "เปิดรูข้างหลอดฉีดยา" จำลองภาวะช่องอกทะลุ`;
+
+            const lab2Count = (lp.lab2InhaleTested ? 1 : 0) + (lp.lab2HoleOpened ? 1 : 0);
+            const lab2Badge = document.getElementById('lab2StatusBadge');
+            if (lp.lab2Completed) {
+                lab2Badge.className = 'text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-bold';
+                lab2Badge.textContent = 'สำเร็จภารกิจแล้ว ✓ (+100 XP)';
+            } else {
+                lab2Badge.className = 'text-[11px] px-2.5 py-0.5 rounded-full bg-white text-sky-900 font-bold';
+                lab2Badge.textContent = `กำลังดำเนินการ (${lab2Count}/2 งานย่อย)`;
+            }
+        }
+
+        function checkLabCompletion() {
+            const lp = playerState.labProgress;
+            if (lp.lab1EnzymeRun && lp.lab1BileTested && !lp.lab1Completed) {
+                lp.lab1Completed = true;
+                addXP(100, 'ทำการทดลองปฏิบัติการบทที่ 13 ครบทุกขั้นตอน!');
+            }
+            if (lp.lab2InhaleTested && lp.lab2HoleOpened && !lp.lab2Completed) {
+                lp.lab2Completed = true;
+                addXP(100, 'ทำการทดลองปฏิบัติการบทที่ 14 ครบทุกขั้นตอน!');
+            }
+            updateLabUIStatus();
+            updateGlobalDashboard();
+        }
+
+        function runEnzymeSimulation(triggeredByUser) {
+            if (triggeredByUser) {
+                playerState.labProgress.lab1EnzymeRun = true;
+                checkLabCompletion();
+            }
+
+            const sub = document.getElementById('lab1Substrate').value;
+            const organ = document.getElementById('lab1Organ').value;
+            const box = document.getElementById('lab1ResultBox');
+
+            const reactions = {
+                'starch-mouth': {
+                    status: 'เกิดการย่อยทางเคมี!',
+                    color: 'emerald',
+                    enzyme: 'เอนไซม์อะไมเลส (Amylase) จากต่อมน้ำลาย 3 คู่',
+                    condition: 'pH 6.2 - 7.4',
+                    equation: 'แป้ง / ไกลโคเจน + H₂O —(อะไมเลส)→ เดกซ์ทริน + มอลโทส'
+                },
+                'starch-stomach': {
+                    status: 'ไม่เกิดการย่อยแป้ง!',
+                    color: 'rose',
+                    enzyme: 'ไม่มีเอนไซม์ย่อยคาร์โบไฮเดรต (อะไมเลสเสียสภาพเพราะกรด HCl)',
+                    condition: 'pH ~ 2.0 (กรดจัด)',
+                    equation: 'แป้ง / เดกซ์ทริน —(ไม่เกิดปฏิกิริยา)—> ส่งต่อไปยังดูโอดินัม'
+                },
+                'starch-duodenum': {
+                    status: 'ย่อยจนได้มอโนแซ็กคาไรด์!',
+                    color: 'emerald',
+                    enzyme: 'อะไมเลส (ตับอ่อน) + มอลเทส, ซูเครส, แล็กเทส (ผนังลำไส้เล็ก)',
+                    condition: 'pH ~ 8.0 (เบสอ่อนจาก NaHCO₃)',
+                    equation: 'แป้ง → มอลโทส —(มอลเทส)→ กลูโคส (ดูดซึมเข้าหลอดเลือดฝอย)'
+                },
+                'protein-mouth': {
+                    status: 'เกิดเฉพาะการย่อยเชิงกล (ฟันบดเคี้ยว)',
+                    color: 'amber',
+                    enzyme: 'ไม่มีเอนไซม์ย่อยโปรตีนในน้ำลาย',
+                    condition: 'pH 6.2 - 7.4',
+                    equation: 'โปรตีนชิ้นใหญ่ —(ฟันบดเคี้ยว)→ โปรตีนชิ้นเล็กลง'
+                },
+                'protein-stomach': {
+                    status: 'เกิดการย่อยโปรตีนทางเคมี!',
+                    color: 'emerald',
+                    enzyme: 'เอนไซม์เพปซิน (เปลี่ยนมาจากเพปซิโนเจนด้วยกรด HCl)',
+                    condition: 'pH ~ 2.0 (กรดจัด)',
+                    equation: 'โปรตีน + H₂O —(เพปซิน)→ พอลิเพปไทด์สายสั้นลง'
+                },
+                'protein-duodenum': {
+                    status: 'ย่อยจนได้กรดแอมิโนอิสระ!',
+                    color: 'emerald',
+                    enzyme: 'ทริปซิน, ไคโมทริปซิน, คาร์บอกซิเพปทิเดส + แอมิโนเพปทิเดส/ไดเพปทิเดส',
+                    condition: 'pH ~ 8.0 (ปลุกด้วยเอนเทอโรไคเนส)',
+                    equation: 'พอลิเพปไทด์ → เพปไทด์สายสั้น → กรดแอมิโน (Amino acid)'
+                },
+                'lipid-mouth': {
+                    status: 'ไม่เกิดการย่อยทางเคมี',
+                    color: 'rose',
+                    enzyme: 'ไม่มีเอนไซม์ย่อยลิพิดในช่องปาก',
+                    condition: 'pH 6.2 - 7.4',
+                    equation: 'ไตรกลีเซอไรด์ —> ไม่เปลี่ยนแปลงทางเคมี'
+                },
+                'lipid-stomach': {
+                    status: 'ไม่เกิดการย่อยลิพิด',
+                    color: 'rose',
+                    enzyme: 'ในกระเพาะอาหารเน้นย่อยโปรตีนด้วยเพปซิน',
+                    condition: 'pH ~ 2.0',
+                    equation: 'ไตรกลีเซอไรด์ —> ส่งต่อไปยังดูโอดินัม'
+                },
+                'lipid-duodenum': {
+                    status: 'ย่อยลิพิดในรูปอิมัลชันจนสมบูรณ์!',
+                    color: 'emerald',
+                    enzyme: 'เกลือน้ำดี (ทำให้เกิดอิมัลชัน) + เอนไซม์ลิเพส (จากตับอ่อนและลำไส้เล็ก)',
+                    condition: 'pH ~ 8.0',
+                    equation: 'ลิพิด (อิมัลชัน) + H₂O —(ลิเพส)→ กรดไขมัน + กลีเซอรอล'
+                },
+                'nucleic-mouth': {
+                    status: 'ไม่เกิดการย่อยกรดนิวคลิอิก',
+                    color: 'rose',
+                    enzyme: 'ไม่มีเอนไซม์นิวคลีเอสในช่องปาก',
+                    condition: 'pH 6.2 - 7.4',
+                    equation: 'DNA / RNA —> ไม่เปลี่ยนแปลง'
+                },
+                'nucleic-stomach': {
+                    status: 'ไม่เกิดการย่อยกรดนิวคลิอิก',
+                    color: 'rose',
+                    enzyme: 'ไม่มีเอนไซม์ย่อยกรดนิวคลิอิกในกระเพาะอาหาร',
+                    condition: 'pH ~ 2.0',
+                    equation: 'DNA / RNA —> ส่งต่อไปยังดูโอดินัม'
+                },
+                'nucleic-duodenum': {
+                    status: 'ย่อยกรดนิวคลิอิกครบทุกขั้นตอน!',
+                    color: 'emerald',
+                    enzyme: 'ดีออกซีไรโบนิวคลีเอส, ไรโบนิวคลีเอส + นิวคลีโอทิเดส, นิวคลีโอซิเดส',
+                    condition: 'pH ~ 8.0',
+                    equation: 'DNA/RNA → นิวคลีโอไทด์ → น้ำตาลเพนโทส + ไนโตรจีนัสเบส + หมู่ฟอสเฟต'
+                }
+            };
+
+            const res = reactions[`${sub}-${organ}`];
+            box.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-${res.color}-100 text-${res.color}-800 border border-${res.color}-300">${res.status}</span>
+                    <span class="text-xs font-semibold text-slate-600">สภาวะ: ${res.condition}</span>
+                </div>
+                <div class="text-xs sm:text-sm text-slate-700"><b>เอนไซม์/สาร:</b> ${res.enzyme}</div>
+                <div class="p-2.5 rounded-xl bg-white border border-amber-300 text-amber-900 font-bold text-xs sm:text-sm text-center shadow-sm">
+                    ${res.equation}
+                </div>
+            `;
+        }
+
+        let bileEmulsified = false;
+        function toggleBileEmulsion() {
+            bileEmulsified = !bileEmulsified;
+            playerState.labProgress.lab1BileTested = true;
+            checkLabCompletion();
+
+            const circles = document.getElementById('bileCircles');
+            const text = document.getElementById('bileText');
+            const btn = document.getElementById('bileBtn');
+
+            if (bileEmulsified) {
+                btn.textContent = 'สลับดูหลอดที่ 2 (ไม่เติมน้ำดี)';
+                circles.innerHTML = `
+                    <div class="grid grid-cols-4 gap-1">
+                        <div class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></div>
+                        <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-rose-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-rose-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-rose-400"></div>
+                    </div>
+                `;
+                text.innerHTML = `<b class="text-emerald-800">หลอดที่ 1 (เติมน้ำดี 3-4 หยดแล้วเขย่า):</b> เกลือน้ำดีทำให้น้ำมันพืชที่ย้อมสีซูดานแตกตัวเป็นหยดเล็กๆ แขวนลอยในน้ำ (อิมัลชัน) ช่วยเพิ่มพื้นที่ผิวให้ลิเพสเข้าย่อย!`;
+            } else {
+                btn.textContent = 'หยดน้ำดีลงในหลอดทดลองที่ 1';
+                circles.innerHTML = `<div class="w-8 h-8 rounded-full bg-rose-500 shadow-md"></div>`;
+                text.innerHTML = `<b>หลอดที่ 2 (ไม่เติมน้ำดี):</b> น้ำมันพืชที่ย้อมด้วยสีซูดานลอยแยกชั้นอยู่ด้านบนของน้ำเป็นหยดขนาดใหญ่ เอนไซม์ลิเพสเข้าย่อยได้ยาก`;
+            }
+        }
+
+        function updateBreathingSim(triggeredByUser) {
+            const val = Number(document.getElementById('diaphragmSlider').value);
+            const holeSealed = document.getElementById('holeSealedToggle').checked;
+
+            if (triggeredByUser) {
+                if (val >= 60 && holeSealed) {
+                    playerState.labProgress.lab2InhaleTested = true;
+                }
+                if (!holeSealed) {
+                    playerState.labProgress.lab2HoleOpened = true;
+                }
+                checkLabCompletion();
+            }
+
+            const diaphragmPath = document.getElementById('svgDiaphragm');
+            const plungerRod = document.getElementById('svgPlungerRod');
+            const lungL = document.getElementById('svgLungLeft');
+            const lungR = document.getElementById('svgLungRight');
+            const sideHole = document.getElementById('svgSideHole');
+            const statsBox = document.getElementById('breathingSimStats');
+            const expBox = document.getElementById('breathingSimExplanation');
+
+            const curveY = 115 + (val * 0.55);
+            const edgeY = 135 + (val * 0.25);
+            diaphragmPath.setAttribute('d', `M 44 ${edgeY} Q 100 ${curveY} 156 ${edgeY}`);
+            plungerRod.setAttribute('y', curveY - 5);
+            sideHole.setAttribute('fill', holeSealed ? '#10B981' : '#F43F5E');
+
+            if (holeSealed) {
+                const rx = 18 + (val * 0.12);
+                const ry = 25 + (val * 0.18);
+                lungL.setAttribute('rx', rx);
+                lungL.setAttribute('ry', ry);
+                lungR.setAttribute('rx', rx);
+                lungR.setAttribute('ry', ry);
+
+                const isInhaling = val > 50;
+                const volMl = Math.round(2400 + (val * 5));
+                statsBox.innerHTML = `
+                    <div class="p-2 rounded-xl bg-white border border-sky-200 shadow-sm">
+                        <div class="text-[10px] text-slate-500">สถานะกะบังลม</div>
+                        <div class="font-bold ${isInhaling ? 'text-emerald-700' : 'text-amber-700'}">${isInhaling ? 'หดตัว (เคลื่อนต่ำลง)' : 'คลายตัว (โค้งสูงขึ้น)'}</div>
+                    </div>
+                    <div class="p-2 rounded-xl bg-white border border-sky-200 shadow-sm">
+                        <div class="text-[10px] text-slate-500">ความดันในปอด</div>
+                        <div class="font-bold text-sky-800">${isInhaling ? 'ต่ำกว่าภายนอก' : 'สูงกว่าภายนอก'}</div>
+                    </div>
+                `;
+                expBox.innerHTML = isInhaling
+                    ? `<b>ขณะดึงลูกสูบลง (หายใจเข้า):</b> ปริมาตรในกระบอกสูบเพิ่มขึ้น ความดันลดลง อากาศภายนอกไหลเข้าสู่ลูกโป่ง (ปอดพองตัว ~${volMl} mL)`
+                    : `<b>ขณะดันลูกสูบขึ้น (หายใจออก):</b> ปริมาตรในกระบอกสูบลดลง ความดันภายในสูงขึ้น ดันอากาศออกจากลูกโป่ง`;
+            } else {
+                lungL.setAttribute('rx', 16);
+                lungL.setAttribute('ry', 22);
+                lungR.setAttribute('rx', 16);
+                lungR.setAttribute('ry', 22);
+                statsBox.innerHTML = `
+                    <div class="p-2.5 rounded-xl bg-rose-100 border border-rose-300 col-span-2 text-rose-900 font-semibold">
+                        <b>จำลองภาวะช่องอกทะลุ (เปิดรูข้างหลอด):</b> ลูกโป่งไม่พองตัวแม้ดึงลูกสูบลง!
+                    </div>
+                `;
+                expBox.innerHTML = `<b class="text-rose-700">เมื่อเปิดรูข้างหลอดฉีดยา:</b> อากาศภายนอกไหลเข้าออกผ่านรูข้างหลอดโดยตรง ความดันในช่องอกจึงไม่ลดลง ลูกโป่ง (ปอด) จึงไม่ขยายตัว!`;
+            }
+        }
+
+        function calcPartialPressure(totalP, label) {
+            const po2 = (totalP * 0.21).toFixed(1);
+            document.getElementById('po2CalcResult').innerHTML = `ที่${label}: $P_{O_2} = ${totalP} \\times (21/100) = $ <b>${po2} mmHg</b> ${totalP < 500 ? '(ต่ำมาก! เสี่ยงภาวะพร่องออกซิเจน)' : '(ปกติ เพียงพอต่อการแพร่เข้าถุงลม)'}`;
+        }
+
+        // --- QUIZ ARENA LOGIC (WITH CHAPTER THEME STYLING PER QUESTION) ---
+        function renderQuizArena() {
+            const container = document.getElementById('quizArenaContainer');
+            const submittedKeys = Object.keys(playerState.quizSubmitted);
+            const submittedCount = submittedKeys.length;
+            const correctCount = submittedKeys.filter(k => playerState.quizSubmitted[k].isCorrect).length;
+
+            container.innerHTML = `
+                <!-- Real-Time Score Summary Bar -->
+                <div class="flex flex-wrap items-center justify-between gap-4 bg-gradient-to-r from-amber-50 via-white to-emerald-50 p-4 rounded-2xl border-2 border-amber-200 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-2xl ${submittedCount > 0 ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-600'} flex items-center justify-center font-bold text-base shadow-sm">
+                            ${correctCount}/10
+                        </div>
+                        <div>
+                            <div class="text-sm sm:text-base font-bold text-slate-800">
+                                สถานะคะแนน: ${submittedCount === 0 ? 'ยังไม่ได้ทำข้อสอบ (0/10 คะแนน)' : `ทำถูก ${correctCount} ข้อ (ส่งคำตอบแล้ว ${submittedCount}/10 ข้อ)`}
+                            </div>
+                            <div class="text-xs text-slate-600">เลือกตัวเลือกแล้วกด "ส่งตรวจคำตอบข้อนี้" เพื่อบันทึกสถิติและรับข้อละ +40 XP</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 10 Questions List -->
+                <div class="space-y-4">
+                    ${bossQuizQuestions.map((item, qIdx) => {
+                        const subRecord = playerState.quizSubmitted[qIdx];
+                        const isSubmitted = subRecord !== undefined;
+                        const tempChosen = playerState.quizSelectedOption[qIdx];
+                        const activeChoice = isSubmitted ? subRecord.chosen : tempChosen;
+                        const qTheme = chapterThemes[item.chId] || chapterThemes.ch13;
+
+                        return `
+                            <div class="p-5 rounded-3xl bg-white border-2 ${isSubmitted ? (subRecord.isCorrect ? 'border-emerald-400' : 'border-rose-300') : qTheme.cardBorder} space-y-4 shadow-sm">
+                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                    <span class="text-xs font-bold px-3 py-1 rounded-full border ${qTheme.badgeBg}">${item.tag}</span>
+                                    <span class="text-xs font-bold ${isSubmitted ? (subRecord.isCorrect ? 'text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full' : 'text-rose-700 bg-rose-100 px-2.5 py-0.5 rounded-full') : 'text-slate-500'}">
+                                        ${isSubmitted ? (subRecord.isCorrect ? '✓ ตอบถูก (+40 XP)' : '✗ ตอบผิด (0 XP)') : 'ยังไม่ได้ส่งคำตอบ'}
+                                    </span>
+                                </div>
+                                <h4 class="text-base font-bold text-slate-800 font-reading leading-relaxed">${item.q}</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                                    ${item.options.map((opt, oIdx) => {
+                                        let style = 'bg-slate-50 hover:bg-white border-slate-200 text-slate-700';
+                                        if (isSubmitted) {
+                                            if (oIdx === item.correct) {
+                                                style = 'bg-emerald-100 border-2 border-emerald-500 text-emerald-950 font-bold';
+                                            } else if (oIdx === subRecord.chosen) {
+                                                style = 'bg-rose-100 border-2 border-rose-400 text-rose-950';
+                                            } else {
+                                                style = 'bg-slate-50/50 border-slate-200 text-slate-400';
+                                            }
+                                        } else if (activeChoice === oIdx) {
+                                            style = 'bg-amber-50 border-2 border-amber-500 text-amber-950 font-semibold shadow-sm';
+                                        }
+                                        return `
+                                            <button onclick="selectQuizDraftOption(${qIdx}, ${oIdx})" ${isSubmitted ? 'disabled' : ''} class="p-3.5 rounded-xl border text-left text-xs sm:text-sm transition flex items-start gap-2.5 ${style}">
+                                                <span class="w-6 h-6 rounded-lg bg-white border border-slate-300 text-slate-800 font-bold flex items-center justify-center shrink-0 text-xs">${['ก','ข','ค','ง'][oIdx]}</span>
+                                                <span class="font-reading">${opt}</span>
+                                            </button>
+                                        `;
+                                    }).join('')}
+                                </div>
+
+                                ${!isSubmitted ? `
+                                    <div class="pt-1">
+                                        <button onclick="submitSingleQuizQuestion(${qIdx})" ${activeChoice === undefined ? 'disabled' : ''} class="px-5 py-2 rounded-xl ${qTheme.accentBtn} font-bold text-xs transition shadow-sm disabled:opacity-40 disabled:pointer-events-none">
+                                            <i class="fa-solid fa-paper-plane mr-1"></i> ส่งตรวจคำตอบข้อที่ ${qIdx + 1}
+                                        </button>
+                                    </div>
+                                ` : `
+                                    <div class="p-3.5 rounded-xl text-xs sm:text-sm font-reading leading-relaxed ${subRecord.isCorrect ? 'bg-emerald-50 text-emerald-950 border border-emerald-300' : 'bg-rose-50 text-rose-950 border border-rose-300'}">
+                                        <b>${subRecord.isCorrect ? '<i class="fa-solid fa-check-circle mr-1 text-emerald-600"></i> คำตอบถูกต้อง! (+40 XP):' : '<i class="fa-solid fa-times-circle mr-1 text-rose-600"></i> เฉลยละเอียด:'}</b> ${item.explanation}
+                                    </div>
+                                `}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function selectQuizDraftOption(qIdx, oIdx) {
+            if (playerState.quizSubmitted[qIdx] !== undefined) return;
+            playerState.quizSelectedOption[qIdx] = oIdx;
+            renderQuizArena();
+        }
+
+        function submitSingleQuizQuestion(qIdx) {
+            const chosen = playerState.quizSelectedOption[qIdx];
+            if (chosen === undefined || playerState.quizSubmitted[qIdx] !== undefined) return;
+
+            const isCorrect = (chosen === bossQuizQuestions[qIdx].correct);
+            playerState.quizSubmitted[qIdx] = { chosen, isCorrect };
+
+            if (isCorrect) {
+                addXP(40, `ตอบข้อสอบบอสข้อที่ ${qIdx + 1} ถูกต้อง!`);
+            } else {
+                showToast(`ส่งคำตอบข้อที่ ${qIdx + 1} แล้ว`, 'ยังไม่ถูกนะกัปตัน อ่านเฉลยละเอียดด้านล่างได้เลย', 'fa-book-open', 'rose');
+                updateGlobalDashboard();
+            }
+            renderQuizArena();
+        }
+
+        function resetQuizArenaOnly() {
+            playerState.quizSelectedOption = {};
+            playerState.quizSubmitted = {};
+            recalculateTotalXP();
+            renderQuizArena();
+            updateGlobalDashboard();
+            showToast('ล้างคำตอบชุดข้อสอบแล้ว', 'คุณสามารถเริ่มทำข้อสอบทั้ง 10 ข้อใหม่ได้ทันที', 'fa-rotate-right', 'sky');
+        }
+
+        function recalculateTotalXP() {
+            const sceneXP = Object.keys(playerState.completedScenes).length * 50;
+            const labXP = (playerState.labProgress.lab1Completed ? 100 : 0) + (playerState.labProgress.lab2Completed ? 100 : 0);
+            const quizXP = Object.values(playerState.quizSubmitted).filter(r => r.isCorrect).length * 40;
+            playerState.xp = sceneXP + labXP + quizXP;
+        }
+
+        // --- BADGE & RESET MODALS ---
+        function openBadgeModal() {
+            const list = document.getElementById('badgeModalList');
+            list.innerHTML = Object.values(playerState.badges).map(b => `
+                <div class="flex items-center gap-4 p-3.5 rounded-2xl border-2 ${b.unlocked ? 'bg-emerald-50/70 border-emerald-400' : 'bg-slate-50 border-slate-200 opacity-60 grayscale'}">
+                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl ${b.unlocked ? b.color : 'bg-slate-200 text-slate-500'}">
+                        <i class="fa-solid ${b.icon}"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                            <span>${b.name}</span>
+                            ${b.unlocked ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500 text-white font-bold">ปลดล็อกแล้ว ✓</span>' : '<span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 text-slate-600"><i class="fa-solid fa-lock mr-1"></i>ล็อกอยู่</span>'}
+                        </div>
+                        <div class="text-xs text-slate-600 font-reading mt-0.5">${b.desc}</div>
+                    </div>
+                </div>
+            `).join('');
+            const modal = document.getElementById('badgeModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeBadgeModal() {
+            const modal = document.getElementById('badgeModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function openResetConfirmModal() {
+            const modal = document.getElementById('resetConfirmModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeResetConfirmModal() {
+            const modal = document.getElementById('resetConfirmModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function executeFullReset() {
+            try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+            playerState = createInitialState();
+            bileEmulsified = false;
+            document.getElementById('diaphragmSlider').value = 15;
+            document.getElementById('holeSealedToggle').checked = true;
+            closeResetConfirmModal();
+            switchMainTab('story');
+            renderCurrentScene();
+            runEnzymeSimulation(false);
+            updateBreathingSim(false);
+            updateLabUIStatus();
+            updateGlobalDashboard();
+            showToast('รีเซ็ตความคืบหน้าทั้งหมดเป็น 0% แล้ว!', 'พร้อมเริ่มต้นการผจญภัยครั้งใหม่ตั้งแต่ 0 XP', 'fa-rotate-left', 'rose');
+        }
+
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            loadStateFromStorage();
+            document.getElementById('captainNameInput').value = playerState.captainName;
+            renderCurrentScene();
+            runEnzymeSimulation(false);
+            updateBreathingSim(false);
+            updateLabUIStatus();
+            updateGlobalDashboard();
+        };
+    </script>
+</body>
+</html>
